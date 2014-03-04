@@ -30,10 +30,10 @@ type
     Button11: TButton;
     Button12: TButton;
     Panel4: TPanel;
-    Panel5: TPanel;
+    MeisiForm: TPanel;
     Button9: TButton;
     Button1: TButton;
-    MeisiForm: TQRImage;
+    MeisiForm1: TQRImage;
     ComboBox1: TComboBox;
     ComboBox2: TComboBox;
     UpDown1: TUpDown;
@@ -528,7 +528,7 @@ begin
   end;
 end;
 
-function setMoveCompSet(tp,lf,wd,ht:integer):boolean;
+function setMoveCompSet(tp,lf,ht,wd:integer):boolean;
 var
   i,i1:integer;
   R:TRect;
@@ -674,8 +674,6 @@ begin
     with form1.comp.Items[i] do begin
       cmp.Width := Width;
       cmp.Height := Height;
-      //cmp.Text := ;
-      //cmp.Font := Font;
       form1.ComboBox2.Text := inttostr(Top);
       form1.ComboBox3.Text := InttoStr(left);
       form1.ComboBox4.Text := IntToStr(Height);
@@ -749,7 +747,7 @@ begin
   form1.comp.Add(cmp);
 end;
 
-function select_comp(s:string;tp,lf,dt,ht:integer):boolean;
+function select_comp(s:string;tp,lf,ht,dt:integer):boolean;
 begin
   if s = 'é ê^' then begin
     create_comp(TImage.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
