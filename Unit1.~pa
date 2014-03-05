@@ -30,14 +30,14 @@ type
     Button11: TButton;
     Button12: TButton;
     Panel4: TPanel;
-    MeisiForm: TPanel;
+    MeisiPanel: TPanel;
     Button9: TButton;
     Button1: TButton;
-    MeisiForm1: TQRImage;
+    MeisiForm: TQRImage;
     ComboBox1: TComboBox;
     ComboBox2: TComboBox;
     UpDown1: TUpDown;
-    UpDown2: TUpDown;
+    UpDown: TUpDown;
     ComboBox4: TComboBox;
     UpDown3: TUpDown;
     UpDown4: TUpDown;
@@ -51,16 +51,18 @@ type
     TrackBar4: TTrackBar;
     Button5: TButton;
     ComboBox6: TComboBox;
-    UpDown5: TUpDown;
+    UpDown2: TUpDown;
     UpDown6: TUpDown;
     ComboBox3: TComboBox;
     ComboBox5: TComboBox;
     Button6: TButton;
-    Memo1: TMemo;
     Button7: TButton;
     Button8: TButton;
-    Image1: TImage;
     setCompIMG: TImage;
+    Panel5: TPanel;
+    Image1: TImage;
+    Memo1: TMemo;
+    Button10: TButton;
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -75,8 +77,9 @@ type
     procedure ComboBox6Change(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure ComboBox2Change(Sender: TObject);
-    procedure UpDown5Changing(Sender: TObject; var AllowChange: Boolean);
+    procedure UpDown2Changing(Sender: TObject; var AllowChange: Boolean);
     procedure TrackBar1Change(Sender: TObject);
+    procedure Button10Click(Sender: TObject);
   private
     { Private 宣言 }
     QRMemo1 : TQRRichText;
@@ -279,13 +282,13 @@ function createmeomo:boolean;
 begin
   with form1 do begin
     QRMemo1 := TQRRichText.Create(form1);
-    QRMemo1.Parent := form1.Panel5;
+    QRMemo1.Parent := form1.MeisiForm;
     QRMemo1.Left := 8;
     QRMemo1.Top := 92;
     //QRMemo1.WordWrap := true;
     //QRMemo1.AutoSize := true;
     QRMemo1.Height := 120;
-    QRMemo1.Width := panel5.Width -10;
+    QRMemo1.Width := MeisiForm.Width -10;
   end;
 end;
 
@@ -520,10 +523,10 @@ begin
     form1.TrackBar3.Max := Height;
     form1.TrackBar4.Max := Width;
 
-    form1.UpDown2.Max := Height;
-    form1.UpDown3.Max := Width;
-    form1.UpDown4.Max := Height;
-    form1.UpDown5.Max := Width;
+    form1.UpDown1.Max := Height;
+    form1.UpDown2.Max := Width;
+    form1.UpDown3.Max := Height;
+    form1.UpDown4.Max := Width;
     setcomb(Top,Left,Height,Width);
   end;
 end;
@@ -606,6 +609,7 @@ begin
     TrackBar1.Position := updown1.Position;
     TrackBar2.Position := updown2.Position;
     TrackBar3.Position := updown3.Position;
+    combobox4.Text := inttostr(trackbar3.position);
     TrackBar4.Position := updown4.Position;
     setMoveCompSet(
       updown1.Position,
@@ -647,6 +651,7 @@ begin
     end;
     try
       TrackBar3.Position := strtoint(combobox4.text);
+      updown3.Position := strtoint(combobox4.text);
     except
     end;
     try
@@ -669,11 +674,14 @@ begin
   changtrackbar;
 end;
 
-function set_editcomp(i:integer;cmp:TControl):boolean;
+function set_editcomp(i:integer;cmp:Tcontrol):boolean;
+var
+  c:Tcontrol;
 begin
     with form1.comp.Items[i] do begin
-      cmp.Width := Width;
-      cmp.Height := Height;
+      c := form1.comp.Items[i];
+      cmp.Width := c.Width;
+      cmp.Height := c.Height;
       form1.ComboBox2.Text := inttostr(Top);
       form1.ComboBox3.Text := InttoStr(left);
       form1.ComboBox4.Text := IntToStr(Height);
@@ -697,10 +705,10 @@ begin
     m.Text := memo.Text;
     m.Font := memo.Font;
     with comp.Items[i] do begin
-      m.top := Top;
-      m.Left := Left;
-      m.Width := Width;
-      m.Height := Height;
+      m.top := form1.UpDown1.Position;
+      m.Left := form1.UpDown2.Position;
+      m.Height := form1.UpDown3.Position;
+      m.Width := form1.UpDown4.Position;
       m.Visible := true;
       m.Parent := Parent;
     end;
@@ -711,26 +719,39 @@ begin
   end;
 end;
 
-function create_pic(i:integer;img:TImage):boolean;
+function create_pic(i:integer;img:TImage;loadPIC:boolean):boolean;
+var
+  J:TJPegImage;
+  B:TBitmap;
 begin
   with form1 do begin
-    if not opendialog1.Execute then
-      exit;
-    img.Picture.LoadFromFile(opendialog1.FileName);
+    if loadPIC then begin
+      if not opendialog1.Execute then
+        exit;
+    end;
+      B := TBitmap.Create;
+      J :=TJpegImage.Create;
+      J.LoadFromFile(opendialog1.FileName);
+      B.Assign(J);
+      img.Picture.Assign(B);
+      B.Free;
+      J.Free;
   end;
   with form1.comp.Items[i] do begin
-      img.top := Top;
-      img.Left := Left;
-      img.Width := Width;
-      img.Height := Height;
+      img.top := form1.TrackBar1.Position;
+      img.Left := form1.TrackBar2.Position;
+      img.Width := form1.TrackBar4.Position;
+      img.Height := form1.TrackBar3.Position;
       img.Visible := true;
       img.Parent := Parent;
       img.Stretch := true;
   end;
-  try
-    form1.comp.Items[i].free;
-  except end;
-  form1.comp.Items[i] := img;
+  //if loadPIC then begin
+    try
+      form1.comp.Items[i].free;
+    except end;
+    form1.comp.Items[i] := img;
+ // end;
 end;
 
 function create_comp(cmp:TControl;p:TWinControl;tp,lf,dt,ht:integer):boolean;
@@ -751,12 +772,12 @@ function select_comp(s:string;tp,lf,ht,dt:integer):boolean;
 begin
   if s = '写真' then begin
     create_comp(TImage.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
-    create_pic(form1.comp.Count -1,TImage.Create(form1));
+    create_pic(form1.comp.Count -1,TImage.Create(form1),true);
   end else if s = 'メモ' then begin
    create_comp(TMemo.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
   end else if s = 'お絵描き領域' then begin
     create_comp(TImage.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
-    create_pic(form1.comp.Count -1,TImage.Create(form1));
+    create_pic(form1.comp.Count -1,TImage.Create(form1),true);
   end;
   form1.ComboBox6.Items.Add(
     inttostr(form1.comp.count-1) + form1.ComboBox1.Text
@@ -793,7 +814,7 @@ end;
 procedure TForm1.Button6Click(Sender: TObject);
 begin
   try
-    create_pic(form1.ComboBox6.ItemIndex,TImage.Create(form1));
+    create_pic(form1.ComboBox6.ItemIndex,TImage.Create(form1),true);
   except
     showmessage('「写真」が選択されていません。');
   end;
@@ -823,9 +844,17 @@ end;
 
 procedure TForm1.Button7Click(Sender: TObject);
 begin
-  try
-    create_memo(combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
-  except end;
+  if 0 < ansipos('メモ',combobox6.Text) then begin
+    try
+      create_memo(combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
+    except end;
+  end else if 0 < ansipos('写真',combobox6.Text) then begin
+    try
+      create_PIC(combobox6.ItemIndex,Image1,false);
+    except end;
+  end;
+
+
 end;
 
 procedure TForm1.ComboBox2Change(Sender: TObject);
@@ -833,7 +862,7 @@ begin
   changcombobox;
 end;
 
-procedure TForm1.UpDown5Changing(Sender: TObject;
+procedure TForm1.UpDown2Changing(Sender: TObject;
   var AllowChange: Boolean);
 begin
   changupdown;
@@ -844,5 +873,22 @@ begin
   changtrackbar;
 end;
 
+
+
+procedure TForm1.Button10Click(Sender: TObject);
+var
+  J:TJPegImage;
+  B:TBitmap;
+begin
+  if not opendialog1.Execute then
+    exit;
+  B := TBitmap.Create;
+  J :=TJpegImage.Create;
+  J.LoadFromFile(opendialog1.FileName);
+  B.Assign(J);
+  MeisiForm.Picture.Assign(B);
+  B.Free;
+  J.Free;
+end;
 
 end.
