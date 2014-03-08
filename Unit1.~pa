@@ -132,6 +132,489 @@ begin
  end;
 end;
 
+
+function setcomb(Top,Left,Height,Width:integer):boolean;
+var
+  i,Max:integer;
+  function setMax(i,i2:integer):integer;
+  begin
+    if i < i2 then
+      i := i2;
+    setMax := i
+  end;
+begin
+  Max := Top;
+  Max := setMax(Max,Left);
+  Max := setMax(Max,Height);
+  Max := setMax(Max,Width);
+  with form1 do begin
+    for i := 0 to Max do begin
+      if i <= Top then
+        combobox2.Items.Add(inttostr(i));
+      if i <= Left then
+        combobox3.Items.Add(inttostr(i));
+      if i <= Height then
+        combobox4.Items.Add(inttostr(i));
+      if i <= Width then
+        combobox5.Items.Add(inttostr(i));
+    end;
+  end;
+end;
+
+
+function setMeisiSize:boolean;
+begin
+  with form1.MeisiForm do begin
+    form1.TrackBar1.Max := Height;
+    form1.TrackBar2.Max := Width;
+    form1.TrackBar3.Max := Height;
+    form1.TrackBar4.Max := Width;
+
+    form1.UpDown1.Max := Height;
+    form1.UpDown2.Max := Width;
+    form1.UpDown3.Max := Height;
+    form1.UpDown4.Max := Width;
+    setcomb(Top,Left,Height,Width);
+  end;
+end;
+
+function setMoveCompSet(tp,lf,ht,wd:integer):boolean;
+var
+  i,i1:integer;
+  R:TRect;
+  B:TBitmap;
+begin
+  {B := TBitMap.Create;
+  B.Width := wd;
+  B.Height := ht;
+  R := Rect(10,10,20, 30);
+  B.Canvas.Pen.Color := clBlack;
+  //B.Canvas; //(10,10,20,20,40,40,50,50);
+  //B.Canvas.Pen.Style := pssolid;
+  //B.Canvas.Brush.Style:= bssolid;
+  //B.Canvas.Brush.Color := clblack;
+  //B.Canvas.Rectangle(R.Left,R.Top,R.Right,R.Bottom);
+  form1.setcompIMG.Picture.Bitmap := (B);
+  }
+  with form1.setcompIMG do begin
+    top := tp;
+    Left := lf;
+    Width := wd+ 2;
+    Height := ht + 2;
+  end;
+  //B.Free;
+end;
+
+function changupdown:boolean;
+begin
+  with form1 do begin
+    TrackBar1.Position := updown1.Position;
+    TrackBar2.Position := updown2.Position;
+    TrackBar3.Position := updown3.Position;
+    combobox4.Text := inttostr(trackbar3.position);
+    TrackBar4.Position := updown4.Position;
+    setMoveCompSet(
+      updown1.Position,
+      updown2.Position,
+      updown3.Position,
+      updown4.Position
+    );
+
+  end;
+end;
+
+function changtrackbar:boolean;
+begin
+  with form1 do begin
+    updown1.Position := TrackBar1.Position;
+    updown2.Position := TrackBar2.Position;
+    combobox3.Text := inttostr(TrackBar2.Position);
+    updown3.Position := TrackBar3.Position;
+    updown4.Position := TrackBar4.Position;
+    setMoveCompSet(
+        TrackBar1.Position,
+        TrackBar2.Position,
+        TrackBar3.Position,
+        TrackBar4.Position
+    );
+  end;
+end;
+
+function changcombobox:boolean;
+begin
+  with form1 do begin
+    try
+      TrackBar1.Position := strtoint(combobox2.text);
+    except
+    end;
+    try
+      TrackBar2.Position := strtoint(combobox3.text);
+    except
+    end;
+    try
+      TrackBar3.Position := strtoint(combobox4.text);
+      updown3.Position := strtoint(combobox4.text);
+    except
+    end;
+    try
+      TrackBar4.Position := strtoint(combobox5.text);
+    except
+    end;
+    setMoveCompSet(
+       strtoint(combobox2.text),
+       strtoint(combobox3.text),
+       strtoint(combobox4.text),
+       strtoint(combobox5.text)
+    );
+  end;
+end;
+
+function set_compSize:boolean;
+begin
+  changcombobox;
+  changupdown;
+  changtrackbar;
+end;
+
+function set_editcomp(i:integer;cmp:Tcontrol):boolean;
+var
+  c:Tcontrol;
+begin
+    with form1.comp.Items[i] do begin
+      c := form1.comp.Items[i];
+      cmp.Width := c.Width;
+      cmp.Height := c.Height;
+      form1.ComboBox2.Text := inttostr(Top);
+      form1.ComboBox3.Text := InttoStr(left);
+      form1.ComboBox4.Text := IntToStr(Height);
+      form1.ComboBox5.Text := IntToStr(Width);
+      changcombobox;
+      with form1 do
+        setMoveCompSet(
+          strtoint(combobox2.text),
+          strtoint(combobox3.text),
+          strtoint(combobox4.text),
+          strtoint(combobox5.text)
+        );
+    end;
+end;
+
+
+function create_Qmemo(savefile:string;i:integer;memo,m:TQrMemo):boolean;
+begin
+  with form1 do begin
+    m.Lines.Text := memo.Lines.Text;
+    m.Font := memo.Font;
+    m.Lines.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+    with comp.Items[i] do begin
+      Hint := savefile;
+      m.top := form1.UpDown1.Position;
+      m.Left := form1.UpDown2.Position;
+      m.Height := form1.UpDown3.Position;
+      m.Width := form1.UpDown4.Position;
+      m.Visible := true;
+      m.Parent := Parent;
+    end;
+    try
+      comp.Items[i].free;
+    except end;
+    comp.Items[i] := m;
+    comp.Items[i].Tag := 2;
+    comp.Items[i].hint := savefile;
+    //showmessage(comp.Items[i].Hint + ' ' +savefile);
+  end;
+end;
+
+function create_Qpic(savefile:string;i:integer;img:TQrImage;loadPIC:boolean):boolean;
+var
+  J:TJPegImage;
+  B:TBitmap;
+begin
+  with form1 do begin
+    if loadPIC then begin
+      if not opendialog1.Execute then
+        exit;
+    end;
+      B := TBitmap.Create;
+      J :=TJpegImage.Create;
+      J.LoadFromFile(opendialog1.FileName);
+      J.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+      B.Assign(J);
+      img.Picture.Assign(B);
+      B.Free;
+      J.Free;
+  end;
+
+  with form1.comp.Items[i] do begin
+      Hint := savefile;
+      img.top := form1.TrackBar1.Position;
+      img.Left := form1.TrackBar2.Position;
+      img.Width := form1.TrackBar4.Position;
+      img.Height := form1.TrackBar3.Position;
+      img.Visible := true;
+      img.Parent := Parent;
+      img.Stretch := true;
+  end;
+  //if loadPIC then begin
+    try
+      form1.comp.Items[i].free;
+    except end;
+    form1.comp.Items[i] := img;
+    form1.comp.Items[i].hint := savefile;
+    form1.comp.Items[i].Tag := 1;
+ // end;
+end;
+
+
+
+function create_memo(savefile:string;i:integer;memo,m:TMemo):boolean;
+begin
+  with form1 do begin
+    m.Text := memo.Text;
+    m.Font := memo.Font;
+    m.Lines.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+    with comp.Items[i] do begin
+      Hint := savefile;
+      m.top := form1.UpDown1.Position;
+      m.Left := form1.UpDown2.Position;
+      m.Height := form1.UpDown3.Position;
+      m.Width := form1.UpDown4.Position;
+      m.Visible := true;
+      m.Parent := Parent;
+    end;
+    try
+      comp.Items[i].free;
+    except end;
+    comp.Items[i] := m;
+    comp.Items[i].Tag := 2;
+    comp.Items[i].hint := savefile;
+    //showmessage(comp.Items[i].Hint + ' ' +savefile);
+  end;
+end;
+
+function create_pic(savefile:string;i:integer;img:TImage;loadPIC:boolean):boolean;
+var
+  J:TJPegImage;
+  B:TBitmap;
+begin
+  with form1 do begin
+    if loadPIC then begin
+      if not opendialog1.Execute then
+        exit;
+    end;
+      B := TBitmap.Create;
+      J :=TJpegImage.Create;
+      J.LoadFromFile(opendialog1.FileName);
+      J.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+      B.Assign(J);
+      img.Picture.Assign(B);
+      B.Free;
+      J.Free;
+  end;
+
+  with form1.comp.Items[i] do begin
+      Hint := savefile;
+      img.top := form1.TrackBar1.Position;
+      img.Left := form1.TrackBar2.Position;
+      img.Width := form1.TrackBar4.Position;
+      img.Height := form1.TrackBar3.Position;
+      img.Visible := true;
+      img.Parent := Parent;
+      img.Stretch := true;
+  end;
+  //if loadPIC then begin
+    try
+      form1.comp.Items[i].free;
+    except end;
+    form1.comp.Items[i] := img;
+    form1.comp.Items[i].hint := savefile;
+    form1.comp.Items[i].Tag := 1;
+ // end;
+end;
+
+function create_comp(cmp:TControl;p:TWinControl;i,tp,lf,dt,ht:integer):boolean;
+begin
+  with cmp do begin;
+    Parent := p;
+    top    := tp;
+    Left   := lf;
+    width  := dt;
+    height := ht;
+    Hint := '';
+    Tag := i;
+    Enabled := true;
+    Visible:= true;
+  end;
+  form1.comp.Add(cmp);
+end;
+
+function select_comp(s:string;tp,lf,ht,dt:integer):boolean;
+begin
+  if s = '写真' then begin
+    create_comp(TImage.Create(form1),form1.MeisiForm,1,tp,lf,dt,ht);
+    create_pic(inttostr(form1.comp.count-1),form1.comp.Count -1,TImage.Create(form1),true);
+  end else if s = 'メモ' then begin
+   create_comp(TMemo.Create(form1),form1.MeisiForm,2,tp,lf,dt,ht);
+  end else if s = 'お絵描き領域' then begin
+    create_comp(TImage.Create(form1),form1.MeisiForm,1,tp,lf,dt,ht);
+    create_pic(inttostr(form1.comp.count-1),form1.comp.Count -1,TImage.Create(form1),true);
+  end;
+  form1.ComboBox6.Items.Add(
+    inttostr(form1.comp.count-1) + form1.ComboBox1.Text
+  );
+end;
+
+
+function loadSeting(s:string):boolean;
+var
+  i,i1:integer;
+  SL:TStringList;
+  cmpname:string;
+  M:TMemo;
+  s1:string;
+begin
+  SL := TStringList.Create;
+  SL.Clear;
+  SL.LoadFromFile(s);
+  M := Tmemo.Create(form1);
+  m.Parent := form1;
+  m.visible := false;
+  m.Clear;
+  i := 0;
+  i1 := 0;
+  while i < SL.Count -1 do begin
+    if SL[i] = '2' then begin
+      create_comp(TMemo.Create(form1),form1.MeisiPanel,1,0,0,10,10);
+      cmpname := 'メモ';
+    end else if SL[i] = '1' then begin
+      create_comp(TImage.Create(form1),form1.MeisiForm,2,0,0,10,10);
+      cmpname := '写真';
+    end;
+
+    form1.ComboBox6.Items.Add(
+      inttostr(form1.comp.Count -1) + cmpname
+    );
+    with form1.comp.Items[i1] do begin
+      s1 := sl[i];
+//      showmessage(s1);
+      tag := strtoint(SL[i]);
+      hint := SL[i+1];
+      if cmpname = '写真' then
+        create_pic(hint,form1.comp.Count-1,TImage.Create(form1),false);
+      if cmpname = 'メモ' then begin
+        m.Lines.LoadFromFile(hint);
+        create_memo(hint,form1.comp.Count-1,M,Tmemo.Create(form1));
+      end;
+      i := i + 6;
+      inc(i1);
+      //showmessage(s1);
+    end;
+  end;
+  i := 0;
+  i1 := 0;
+  while i < SL.Count -1 do begin
+    with form1.comp.Items[i1] do begin
+      tag := strtoint(SL[i]);
+      hint := SL[i+1];
+      TOP := strtoint(SL[i+2]);
+      LEFT := strtoint(SL[i+3]);
+      Height := strtoint(SL[i+4]);
+      Width := strtoint(SL[i+5]);
+      i := i + 6;
+      inc(i1);
+    end;
+  end;
+  M.free;
+  SL.Free;
+end;
+
+function saveSeting(s:string):boolean;
+var
+  i:integer;
+  SL:TStringList;
+begin
+  SL := TStringList.Create;
+  SL.Clear;
+  i := 0;
+  while i < form1.comp.Count do begin
+    with form1.comp.Items[i] do begin
+      SL.add(inttostr(tag));
+      SL.add(hint);
+      SL.add(inttostr(TOP));
+      SL.add(inttostr(LEFT));
+      SL.add(inttostr(Height));
+      SL.add(inttostr(Width));
+      inc(i);
+    end;
+  end;
+  SL.SaveToFile(s);
+  SL.Free;
+end;
+
+function prtSeting(s:string):boolean;
+var
+  i,i1:integer;
+  SL:TStringList;
+  cmpname:string;
+  M:TQrMemo;
+begin
+  SL := TStringList.Create;
+  SL.Clear;
+  SL.LoadFromFile(s);
+  M := TQrmemo.Create(form2);
+  m.Parent := form2;
+  m.Lines.Clear;
+  i := 0;
+  i1 := 0;
+  while i < SL.Count -1 do begin
+    if SL[i] = '2' then begin
+      create_comp(TQrMemo.Create(form2),form2.QuickRep1,1,0,0,10,10);
+      cmpname := 'メモ';
+    end else if SL[i] = '1' then begin
+      create_comp(TQrImage.Create(form2),form2.QuickRep1,2,0,0,10,10);
+      cmpname := '写真';
+    end;
+
+
+    with form1.comp.Items[i1] do begin
+      tag := strtoint(SL[i]);
+      hint := SL[i+1];
+      if cmpname = '写真' then
+        create_Qpic(hint,form1.comp.Count-1,TQrImage.Create(form2),false);
+      if cmpname = 'メモ' then
+        create_Qmemo(hint,form1.comp.Count-1,M,TQrmemo.Create(form2));
+      i := i + 6;
+      inc(i1);
+
+    end;
+  end;
+  i := 0;
+  i1 := 0;
+  while i < SL.Count -1 do begin
+    with form1.comp.Items[i1] do begin
+      tag := strtoint(SL[i]);
+      hint := SL[i+1];
+      TOP := strtoint(SL[i+2]);
+      LEFT := strtoint(SL[i+3]);
+      Height := strtoint(SL[i+4]);
+      Width := strtoint(SL[i+5]);
+      i := i + 6;
+      inc(i1);
+    end;
+  end;
+  M.free;
+  SL.Free;
+end;
+
+
+function setPrint:boolean;
+begin
+  //saveSeting(ExtractFilePath( Paramstr(0) )+ 'aa');
+  prtSeting(ExtractFilePath( Paramstr(0) ) +'aa');
+
+end;
+
+
 {function prot(i,i1,i2:integer):boolean;
 begin
  with form1 do begin
@@ -295,6 +778,7 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
+  setPrint;
   {QRLabel1.Lines.Text := edit1.Lines.Text;
   QRLabel1.Font := edit1.Font;
   QRLabel2.Lines.Text := edit2.Lines.Text;
@@ -395,6 +879,7 @@ begin
   memo1.Font := FontDialog1.Font;
 end;
 
+
 procedure TForm1.Button12Click(Sender: TObject);
 Var
   Jpeg :TJpegImage;
@@ -403,9 +888,11 @@ Var
   s1,s2:string;
   i :integer;
 begin
-{  if not opendialog3.Execute then
+  if not savedialog1.Execute then
     exit;
-  i := 1;
+  saveSeting(savedialog1.FileName);
+
+  {i := 1;
   s1 := '';
   s := opendialog3.FileName;
   while i < length(opendialog3.FileName)-3 do begin
@@ -452,6 +939,11 @@ Var
   Jpeg,jpeg2 :TJpegImage;
   bmp,bmp2:tbitmap;
 begin
+  if not opendialog1.Execute then
+    exit;
+  loadSeting(opendialog1.FileName);
+
+
   {
   if not savedialog1.Execute then
     exit;
@@ -486,77 +978,7 @@ begin
 
 end;
 
-function setcomb(Top,Left,Height,Width:integer):boolean;
-var
-  i,Max:integer;
-  function setMax(i,i2:integer):integer;
-  begin
-    if i < i2 then
-      i := i2;
-    setMax := i
-  end;
-begin
-  Max := Top;
-  Max := setMax(Max,Left);
-  Max := setMax(Max,Height);
-  Max := setMax(Max,Width);
-  with form1 do begin
-    for i := 0 to Max do begin
-      if i <= Top then
-        combobox2.Items.Add(inttostr(i));
-      if i <= Left then
-        combobox3.Items.Add(inttostr(i));
-      if i <= Height then
-        combobox4.Items.Add(inttostr(i));
-      if i <= Width then
-        combobox5.Items.Add(inttostr(i));
-    end;
-  end;
-end;
 
-
-function setMeisiSize:boolean;
-begin
-  with form1.MeisiForm do begin
-    form1.TrackBar1.Max := Height;
-    form1.TrackBar2.Max := Width;
-    form1.TrackBar3.Max := Height;
-    form1.TrackBar4.Max := Width;
-
-    form1.UpDown1.Max := Height;
-    form1.UpDown2.Max := Width;
-    form1.UpDown3.Max := Height;
-    form1.UpDown4.Max := Width;
-    setcomb(Top,Left,Height,Width);
-  end;
-end;
-
-function setMoveCompSet(tp,lf,ht,wd:integer):boolean;
-var
-  i,i1:integer;
-  R:TRect;
-  B:TBitmap;
-begin
-  {B := TBitMap.Create;
-  B.Width := wd;
-  B.Height := ht;
-  R := Rect(10,10,20, 30);
-  B.Canvas.Pen.Color := clBlack;
-  //B.Canvas; //(10,10,20,20,40,40,50,50);
-  //B.Canvas.Pen.Style := pssolid;
-  //B.Canvas.Brush.Style:= bssolid;
-  //B.Canvas.Brush.Color := clblack;
-  //B.Canvas.Rectangle(R.Left,R.Top,R.Right,R.Bottom);
-  form1.setcompIMG.Picture.Bitmap := (B);
-  }
-  with form1.setcompIMG do begin
-    top := tp;
-    Left := lf;
-    Width := wd+ 2;
-    Height := ht + 2;
-  end;
-  //B.Free;
-end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
@@ -587,6 +1009,7 @@ procedure TForm1.Button9Click(Sender: TObject);
 var
   i,i1,i2,i3:integer;
 begin
+  form2.QuickRep1.Preview;
   {i := 0; i1 := -208; i3 :=0;
   resetprot;
   for i2 := 0 to 9 do begin
@@ -599,190 +1022,10 @@ begin
     end;
   end;
 
-  form2.QuickRep1.Preview;
+
   }
 end;
 
-function changupdown:boolean;
-begin
-  with form1 do begin
-    TrackBar1.Position := updown1.Position;
-    TrackBar2.Position := updown2.Position;
-    TrackBar3.Position := updown3.Position;
-    combobox4.Text := inttostr(trackbar3.position);
-    TrackBar4.Position := updown4.Position;
-    setMoveCompSet(
-      updown1.Position,
-      updown2.Position,
-      updown3.Position,
-      updown4.Position
-    );
-
-  end;
-end;
-
-function changtrackbar:boolean;
-begin
-  with form1 do begin
-    updown1.Position := TrackBar1.Position;
-    updown2.Position := TrackBar2.Position;
-    combobox3.Text := inttostr(TrackBar2.Position);
-    updown3.Position := TrackBar3.Position;
-    updown4.Position := TrackBar4.Position;
-    setMoveCompSet(
-        TrackBar1.Position,
-        TrackBar2.Position,
-        TrackBar3.Position,
-        TrackBar4.Position
-    );
-  end;
-end;
-
-function changcombobox:boolean;
-begin
-  with form1 do begin
-    try
-      TrackBar1.Position := strtoint(combobox2.text);
-    except
-    end;
-    try
-      TrackBar2.Position := strtoint(combobox3.text);
-    except
-    end;
-    try
-      TrackBar3.Position := strtoint(combobox4.text);
-      updown3.Position := strtoint(combobox4.text);
-    except
-    end;
-    try
-      TrackBar4.Position := strtoint(combobox5.text);
-    except
-    end;
-    setMoveCompSet(
-       strtoint(combobox2.text),
-       strtoint(combobox3.text),
-       strtoint(combobox4.text),
-       strtoint(combobox5.text)
-    );
-  end;
-end;
-
-function set_compSize:boolean;
-begin
-  changcombobox;
-  changupdown;
-  changtrackbar;
-end;
-
-function set_editcomp(i:integer;cmp:Tcontrol):boolean;
-var
-  c:Tcontrol;
-begin
-    with form1.comp.Items[i] do begin
-      c := form1.comp.Items[i];
-      cmp.Width := c.Width;
-      cmp.Height := c.Height;
-      form1.ComboBox2.Text := inttostr(Top);
-      form1.ComboBox3.Text := InttoStr(left);
-      form1.ComboBox4.Text := IntToStr(Height);
-      form1.ComboBox5.Text := IntToStr(Width);
-      changcombobox;
-      with form1 do
-        setMoveCompSet(
-          strtoint(combobox2.text),
-          strtoint(combobox3.text),
-          strtoint(combobox4.text),
-          strtoint(combobox5.text)
-        );
-    end;
-end;
-
-
-
-function create_memo(i:integer;memo,m:TMemo):boolean;
-begin
-  with form1 do begin
-    m.Text := memo.Text;
-    m.Font := memo.Font;
-    with comp.Items[i] do begin
-      m.top := form1.UpDown1.Position;
-      m.Left := form1.UpDown2.Position;
-      m.Height := form1.UpDown3.Position;
-      m.Width := form1.UpDown4.Position;
-      m.Visible := true;
-      m.Parent := Parent;
-    end;
-    try
-      comp.Items[i].free;
-    except end;
-    comp.Items[i] := m;
-  end;
-end;
-
-function create_pic(i:integer;img:TImage;loadPIC:boolean):boolean;
-var
-  J:TJPegImage;
-  B:TBitmap;
-begin
-  with form1 do begin
-    if loadPIC then begin
-      if not opendialog1.Execute then
-        exit;
-    end;
-      B := TBitmap.Create;
-      J :=TJpegImage.Create;
-      J.LoadFromFile(opendialog1.FileName);
-      B.Assign(J);
-      img.Picture.Assign(B);
-      B.Free;
-      J.Free;
-  end;
-  with form1.comp.Items[i] do begin
-      img.top := form1.TrackBar1.Position;
-      img.Left := form1.TrackBar2.Position;
-      img.Width := form1.TrackBar4.Position;
-      img.Height := form1.TrackBar3.Position;
-      img.Visible := true;
-      img.Parent := Parent;
-      img.Stretch := true;
-  end;
-  //if loadPIC then begin
-    try
-      form1.comp.Items[i].free;
-    except end;
-    form1.comp.Items[i] := img;
- // end;
-end;
-
-function create_comp(cmp:TControl;p:TWinControl;tp,lf,dt,ht:integer):boolean;
-begin
-  with cmp do begin;
-    Parent := p;
-    top    := tp;
-    Left   := lf;
-    width  := dt;
-    height := ht;
-    Enabled := true;
-    Visible:= true;
-  end;
-  form1.comp.Add(cmp);
-end;
-
-function select_comp(s:string;tp,lf,ht,dt:integer):boolean;
-begin
-  if s = '写真' then begin
-    create_comp(TImage.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
-    create_pic(form1.comp.Count -1,TImage.Create(form1),true);
-  end else if s = 'メモ' then begin
-   create_comp(TMemo.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
-  end else if s = 'お絵描き領域' then begin
-    create_comp(TImage.Create(form1),form1.MeisiForm,tp,lf,dt,ht);
-    create_pic(form1.comp.Count -1,TImage.Create(form1),true);
-  end;
-  form1.ComboBox6.Items.Add(
-    inttostr(form1.comp.count-1) + form1.ComboBox1.Text
-  );
-end;
 
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -814,7 +1057,7 @@ end;
 procedure TForm1.Button6Click(Sender: TObject);
 begin
   try
-    create_pic(form1.ComboBox6.ItemIndex,TImage.Create(form1),true);
+    create_pic(inttostr(form1.ComboBox6.ItemIndex),form1.ComboBox6.ItemIndex,TImage.Create(form1),true);
   except
     showmessage('「写真」が選択されていません。');
   end;
@@ -846,11 +1089,11 @@ procedure TForm1.Button7Click(Sender: TObject);
 begin
   if 0 < ansipos('メモ',combobox6.Text) then begin
     try
-      create_memo(combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
+      create_memo(inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
     except end;
   end else if 0 < ansipos('写真',combobox6.Text) then begin
     try
-      create_PIC(combobox6.ItemIndex,Image1,false);
+      create_PIC(inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Image1,false);
     except end;
   end;
 

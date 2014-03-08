@@ -9,12 +9,7 @@ uses
 type
   TForm2 = class(TForm)
     QuickRep1: TQuickRep;
-    QRImage1: TQRImage;
-    QRLabel4: TQRMemo;
-    QRLabel2: TQRMemo;
-    QRLabel1: TQRMemo;
-    QRMemo1: TQRMemo;
-    QRImage2: TQRImage;
+    MeisiForm: TQRImage;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private êÈåæ }
