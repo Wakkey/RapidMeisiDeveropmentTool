@@ -80,9 +80,10 @@ type
   private
     { Private êÈåæ }
     QRMemo1 : TQRRichText;
+    savedir:string;
   public
     { Public êÈåæ }
-    comp:TCompList;
+    comp,qrcomp:TCompList;
     qrimg:array [0..30] of Tqrimage;
     QRLabel:array [0..30] of TQRMemo;
     QRMemo:array [0..30] of TQRMemo;
@@ -335,7 +336,7 @@ begin
       B := TBitmap.Create;
       J :=TJpegImage.Create;
       J.LoadFromFile(opendialog1.FileName);
-      J.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+      J.SaveToFile( savefile);
       B.Assign(J);
       img.Picture.Assign(B);
       B.Free;
@@ -369,7 +370,7 @@ begin
   with form1 do begin
     m.Text := memo.Text;
     m.Font := memo.Font;
-    m.Lines.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+    m.Lines.SaveToFile(savefile);
     with comp.Items[i] do begin
       Hint := savefile;
       m.top := form1.UpDown1.Position;
@@ -402,7 +403,7 @@ begin
       B := TBitmap.Create;
       J :=TJpegImage.Create;
       J.LoadFromFile(opendialog1.FileName);
-      J.SaveToFile(ExtractFilePath( Paramstr(0) ) + savefile);
+      J.SaveToFile(savefile);
       B.Assign(J);
       img.Picture.Assign(B);
       B.Free;
@@ -444,6 +445,23 @@ begin
   end;
   form1.comp.Add(cmp);
 end;
+
+function create_qrcomp(cmp:TControl;p:TWinControl;i,tp,lf,dt,ht:integer):boolean;
+begin
+  with cmp do begin;
+    Parent := p;
+    top    := tp;
+    Left   := lf;
+    width  := dt;
+    height := ht;
+    Hint := '';
+    Tag := i;
+    Enabled := true;
+    Visible:= true;
+  end;
+  form1.qrcomp.Add(cmp);
+end;
+
 
 function select_comp(s:string;tp,lf,ht,dt:integer):boolean;
 begin
@@ -536,7 +554,7 @@ begin
   while i < form1.comp.Count do begin
     with form1.comp.Items[i] do begin
       SL.add(inttostr(tag));
-      SL.add(hint);
+      SL.add( form1.savedir + hint);
       SL.add(inttostr(TOP));
       SL.add(inttostr(LEFT));
       SL.add(inttostr(Height));
@@ -616,11 +634,31 @@ begin
   //prtSeting(ExtractFilePath( Paramstr(0) ) +'aa');
 
 end;
-
+function output(tp,lf:integer):boolean;
+var
+  i:integer;
+  function outputSet(i,tp,lf:integer):boolean;
+  var
+    qrm:TQRMemo;
+  begin
+    with form1.comp.items[i] do begin
+      qrm := TQrMemo.Create(form2);
+      qrm.Lines.LoadFromFile(hint);
+      create_qrcomp(qrm,form2.QuickRep1,tag,tp + top,lf + left,height,width);
+    end;
+  end;
+begin
+  for i := 0 to form1.comp.Count -1 do begin
+    outputset(i,tp,lf);
+  end;
+end;
 
 function prot(i,i1,i2:integer):boolean;
 begin
  with form1 do begin
+   output(i1+ 249,i2+54);
+
+
   //for i := 0 to
   form2.MeisiForm.Parent := form2.QuickRep1;
   form2.MeisiForm.Picture := form1.Image1.Picture;
@@ -837,6 +875,7 @@ Var
 begin
   if not savedialog1.Execute then
     exit;
+  savedir := ExtractFilePath(savedialog1.FileName);
   saveSeting(savedialog1.FileName);
 
   {i := 1;
@@ -932,6 +971,8 @@ begin
   //createmeomo;
   comp := TCompList.Create;
   comp.clear;
+  QrComp := TCompList.Create;
+  QrComp.clear;
   setMeisiSize;
   //form1.setcompIMG := Timage.Create(form1);
   with form1.setcompIMG do begin
@@ -956,9 +997,8 @@ procedure TForm1.Button9Click(Sender: TObject);
 var
   i,i1,i2,i3:integer;
 begin
-  form2.QuickRep1.Preview;
-  {i := 0; i1 := -208; i3 :=0;
-  resetprot;
+  i := 0; i1 := -208; i3 :=0;
+  //resetprot;
   for i2 := 0 to 9 do begin
     prot(i + 0, i1,344 + i3);
     i := i + 1;
@@ -968,9 +1008,7 @@ begin
       i1 :=-208;
     end;
   end;
-
-
-  }
+  form2.QuickRep1.Preview;
 end;
 
 
@@ -1034,9 +1072,10 @@ end;
 
 procedure TForm1.Button7Click(Sender: TObject);
 begin
+  savedir := ExtractFilePath(savedialog1.FileName);
   if 0 < ansipos('ÉÅÉÇ',combobox6.Text) then begin
     try
-      create_memo(inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
+      create_memo( inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
     except end;
   end else if 0 < ansipos('é ê^',combobox6.Text) then begin
     try
