@@ -18,10 +18,15 @@ type
   TForm1 = class(TForm)
     OpenDialog1: TOpenDialog;
     FontDialog1: TFontDialog;
-    Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
-    Panel4: TPanel;
+    Panel7: TPanel;
+    GroupBox5: TGroupBox;
+    Image1: TImage;
+    Memo1: TMemo;
+    GroupBox6: TGroupBox;
+    MeisiForm: TPanel;
+    Panel1: TPanel;
     GroupBox2: TGroupBox;
     ComboBox6: TComboBox;
     UpDown: TUpDown;
@@ -30,10 +35,6 @@ type
     Button10: TButton;
     Button6: TButton;
     Button8: TButton;
-    GroupBox3: TGroupBox;
-    ComboBox1: TComboBox;
-    UpDown6: TUpDown;
-    Button1: TButton;
     GroupBox1: TGroupBox;
     Label1: TLabel;
     Label2: TLabel;
@@ -51,24 +52,23 @@ type
     UpDown4: TUpDown;
     ComboBox4: TComboBox;
     UpDown3: TUpDown;
-    GroupBox5: TGroupBox;
-    Image1: TImage;
-    Memo1: TMemo;
-    GroupBox6: TGroupBox;
-    MeisiPanel: TPanel;
-    setCompIMG: TImage;
-    MeisiForm: TQRImage;
+    GroupBox3: TGroupBox;
+    ComboBox1: TComboBox;
+    UpDown6: TUpDown;
+    Panel8: TPanel;
+    Panel4: TPanel;
     GroupBox8: TGroupBox;
     ListBox1: TListBox;
-    Button4: TButton;
-    Panel5: TPanel;
     GroupBox4: TGroupBox;
-    GroupBox7: TGroupBox;
-    Edit1: TEdit;
+    Button9: TButton;
+    Panel5: TPanel;
     Panel6: TPanel;
     Button2: TButton;
-    Button9: TButton;
     Button12: TButton;
+    Edit1: TEdit;
+    setCompIMG: TGroupBox;
+    MeisiPIc: TImage;
+    waku: TPanel;
     procedure Button12Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Button9Click(Sender: TObject);
@@ -84,11 +84,25 @@ type
     procedure Button8Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure ListBox1DblClick(Sender: TObject);
+    procedure wakuMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure wakuMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure wakuMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure setCompIMGMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure setCompIMGMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure setCompIMGMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
   private
     { Private êÈåæ }
     QRMemo1 : TQRRichText;
     savedir:string;
     crentDir,SearchDir:String;
+    waku_move_sw:boolean;
+    waku_size_sw:boolean;
   public
     { Public êÈåæ }
     comp,qrcomp:TCompList;
@@ -227,11 +241,16 @@ begin
   form1.setcompIMG.Picture.Bitmap := (B);
   }
   with form1.setcompIMG do begin
-    top := tp;
-    Left := lf;
-    Width := wd+ 2;
-    Height := ht + 2;
+    top := tp -8;
+    Left := lf -2;
+    Width := wd+ 4;
+    Height := ht +8;
   end;
+  with form1.waku do begin
+    Width := wd-6;
+    Height := ht-8;
+  end;
+
   //B.Free;
 end;
 
@@ -314,6 +333,8 @@ begin
       c := form1.comp.Items[i];
       cmp.Width := c.Width;
       cmp.Height := c.Height;
+      cmp.Tag := c.Tag;
+      cmp.Hint := c.Hint;
       form1.ComboBox2.Text := inttostr(Top);
       form1.ComboBox3.Text := InttoStr(left);
       form1.ComboBox4.Text := IntToStr(Height);
@@ -473,7 +494,7 @@ begin
   i1 := 0;
   while i < SL.Count -1 do begin
     if SL[i] = '2' then begin
-      create_comp(TMemo.Create(form1),form1.MeisiPanel,1,0,0,10,10);
+      create_comp(TMemo.Create(form1),form1.MeisiForm,1,0,0,10,10);
       cmpname := 'ÉÅÉÇ';
     end else if SL[i] = '1' then begin
       create_comp(TImage.Create(form1),form1.MeisiForm,2,0,0,10,10);
@@ -510,18 +531,27 @@ begin
       end;
       if cmpname = 'é ê^' then begin
         img := TImage.Create(form1);
-        B := TBitmap.Create;
-        J :=TJpegImage.Create;
-        J.LoadFromFile(st[0]);
-        B.Assign(J);
-        img.Picture.Assign(B);
+        if st.Count > 0 then begin
+          B := TBitmap.Create;
+          J :=TJpegImage.Create;
+          try
+            J.LoadFromFile(st[0]);
+            B.Assign(J);
+          except end;   
+          img.Picture.Assign(B);
+        end;
         create_pic(hint,form1.comp.Count-1,img,false);
         B.Free;
         J.Free;
       end else if cmpname = 'ÉÅÉÇ' then begin
-        m.Lines.LoadFromFile(st[0]);
-        m.Font.Name := st[1];
-        m.Font.Size := strtoint(st[2]);
+        if st.Count > 0 then begin
+          try
+            if st[0] = null then
+              m.Lines.LoadFromFile(st[0]);
+          except end;
+          m.Font.Name := st[1];
+          m.Font.Size := strtoint(st[2]);
+        end;
         create_memo(hint,form1.comp.Count-1,M,Tmemo.Create(form1));
       end;
       i := i + 6;
@@ -622,7 +652,7 @@ var
           B := TBitmap.Create;
           J :=TJpegImage.Create;
           J.LoadFromFile(st[0]);
-          showmessage(st[0]);
+          //showmessage(st[0]);
           B.Assign(J);
           qri.Picture.Assign(B);
           create_qrcomp(qri,form2.QuickRep1,tag,tp + top,lf + left,height,width);
@@ -646,7 +676,49 @@ begin
  end;
 end;
 
-
+function Priset1:boolean;
+var
+  st:TStringList;
+  searchdir:string;
+begin
+  if form1.ListBox1.Items.Count = 0 then begin
+    CreateDir( ExtractFilePath( Paramstr(0) ) + 'ñºéhÉTÉìÉvÉã');
+    st := TStringList.Create;
+    st.Text :=
+    '2' + chr(13)
+    + '0;ÇlÇr ÇoÉSÉVÉbÉN;9' + chr(13)
+    + '20' + chr(13)
+    + '68' + chr(13)
+    + '36' + chr(13)
+    + '261' + chr(13)
+    + '2' + chr(13)
+    + '0;ÇlÇr ÇoÉSÉVÉbÉN;14' + chr(13)
+    + '63' + chr(13)
+    + '68' + chr(13)
+    + '36' + chr(13)
+    + '261' + chr(13)
+    + '2' + chr(13)
+    + '0;ÇlÇr ÇoÉSÉVÉbÉN;10' + chr(13)
+    + '108' + chr(13)
+    + '9' + chr(13)
+    + '94' + chr(13)
+    + '321' + chr(13)
+    + '1' + chr(13)
+    + '0' + chr(13)
+    + '27' + chr(13)
+    + '9' + chr(13)
+    + '62' + chr(13)
+    + '53' + chr(13);
+    st.SaveToFile(ExtractFilePath( Paramstr(0) ) + 'ñºéhÉTÉìÉvÉã' + '\Meisi.mpr');
+    st.Free;
+    {form1.setprjdir := ExtractFilePath( Paramstr(0) ) + 'ñºéhÉTÉìÉvÉã' + '\';
+    loadseting(ExtractFilePath( Paramstr(0) ) + 'ñºéhÉTÉìÉvÉã' + '\Meisi.mpr');}
+    SearchDir := ExtractFilePath( Paramstr(0) );
+    EnumFileFromDir(SearchDir);
+    form1.ListBox1.ItemIndex := 0;
+    Form1.ListBox1DblClick(Form1.ListBox1);
+  end;
+end;
 
 procedure TForm1.Button12Click(Sender: TObject);
 var
@@ -678,6 +750,7 @@ begin
   form1.crentdir := ExtractFilePath( Paramstr(0) );
   SearchDir := ExtractFilePath( Paramstr(0) );
   EnumFileFromDir(SearchDir);
+  Priset1;
 end;
 
 
@@ -744,15 +817,60 @@ begin
   try
     create_pic(form1.setprjdir + inttostr(form1.ComboBox6.ItemIndex),form1.ComboBox6.ItemIndex,TImage.Create(form1),true);
   except
-    showmessage('Åué ê^ÅvÇ™ëIëÇ≥ÇÍÇƒÇ¢Ç‹ÇπÇÒÅB');
+    showmessage('çÄñ⁄Ç™ëIëÇ≥ÇÍÇƒÇ¢Ç‹ÇπÇÒÅB');
   end;
 end;
 
 procedure TForm1.ComboBox6Change(Sender: TObject);
+var
+  J:TJPegImage;
+  B:TBitmap;
+  ST:TStringList;
+  function setfilename(st:TStringList;c:TControl):boolean;
+  var
+    s2,s3:String;
+    i2,i3,i4:integer;
+  begin
+    st.Clear;
+    s2 := c.hint;
+    i2 := 1;
+    i4 := 0;
+    s3 := '';
+    if 0 = ansipos(';',s2) then begin
+      st.Text := s2;
+    end else begin
+      s2 := s2 + ';';
+      while i2 > 0 do begin
+        i2 := ansipos(';',s2);
+      for i3 := i4 to i2 -1 do begin
+        s3 := s3 + s2[i3];
+      end;
+      s2[i2] := chr(13);
+      i4 := i2 -1;
+      st.Add(s3);
+      s3 := '';
+    end;
+    st.Text := s2;
+    end;
+  end;
 begin
   if 0 < ansipos('é ê^',combobox6.Text) then begin
     try
       set_editcomp(combobox6.itemIndex,image1);
+      B := TBitmap.Create;
+      J :=TJpegImage.Create;
+      ST := TStringList.Create;
+        setfilename(st,Image1);
+      if st.Count > 0 then begin
+        try
+          J.LoadFromFile(st[0]);
+          B.Assign(J);
+        except end;
+        image1.Picture.Assign(B);
+      end;
+      b.Free;
+      j.Free;
+      image1.Stretch := true;
       image1.Visible := true;
       memo1.Visible := not true;
     except
@@ -762,11 +880,21 @@ begin
     try
       set_editcomp(combobox6.itemIndex,memo1);
       image1.Visible := not true;
+      ST := TStringList.Create;
+      setfilename(st,memo1);
+      if st.Count > 0 then begin
+        try
+          memo1.Lines.LoadFromFile(st[0]);
+        except end;
+        memo1.Font.Name := st[1];
+        memo1.Font.Size := strtoint(st[2]);
+      end;
       memo1.Visible := true;
     except
 
     end;
   end;
+  st.Free;
 end;
 
 
@@ -775,7 +903,7 @@ begin
   savedir := form1.setprjdir;
   if 0 < ansipos('ÉÅÉÇ',combobox6.Text) then begin
     try
-      create_memo( inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
+      create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
     except end;
   end else if 0 < ansipos('é ê^',combobox6.Text) then begin
     try
@@ -815,7 +943,7 @@ begin
   J :=TJpegImage.Create;
   J.LoadFromFile(opendialog1.FileName);
   B.Assign(J);
-  MeisiForm.Picture.Assign(B);
+  MeisiPIC.Picture.Assign(B);
   B.Free;
   J.Free;
 end;
@@ -827,41 +955,13 @@ begin
   memo1.Font := fontdialog1.Font;
 end;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 procedure TForm1.Button2Click(Sender: TObject);
 begin
   if -1 = form1.ListBox1.Items.IndexOf(edit1.Text) then begin
     CreateDir( ExtractFilePath( Paramstr(0) ) + edit1.Text);
     form1.setprjdir := ExtractFilePath( Paramstr(0) ) + edit1.Text + '\';
     SearchDir := ExtractFilePath( Paramstr(0) );
+    listbox1.Items.Clear;
     EnumFileFromDir(SearchDir);
     form1.comp.Free;
     form1.comp := TcompList.Create;
@@ -889,5 +989,91 @@ end;
 
 
 
+
+
+
+
+
+
+
+
+
+procedure TForm1.wakuMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  waku_move_sw := true;
+end;
+
+procedure TForm1.wakuMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  waku_move_sw := not true;
+  changtrackbar;
+end;
+
+procedure TForm1.wakuMouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+var
+  setx,sety:integer;
+begin
+  if waku_move_sw then begin
+    with form1.setCompIMG do begin
+      setY := top + Y;
+      setX := left + x;
+      top := setY;
+      left := setX;
+    end;
+    form1.TrackBar1.Position := setY;
+    form1.TrackBar2.Position := setX;
+    form1.ComboBox2.Text := inttostr(setY);
+    form1.ComboBox3.Text := inttostr(setX);
+    form1.UpDown1.Position := setY;
+    form1.UpDown2.Position := setX;
+  end;
+end;
+
+procedure TForm1.setCompIMGMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  waku_size_sw := true;
+end;
+
+procedure TForm1.setCompIMGMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  waku_size_sw := not true;
+  changtrackbar;
+end;
+
+procedure TForm1.setCompIMGMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+var
+  setX,setY:integer;
+begin
+  if waku_size_sw then begin
+    if form1.setCompIMG.Height > 10 then begin
+    if form1.setCompIMG.Width > 10 then begin
+      with form1.setCompIMG do begin
+        setY :=  Y;
+        setX :=  X;
+        Height := setY;
+        width := setX
+      end;
+      with form1.waku do begin
+        setY :=  Y -16;
+        setX :=  X -8;
+        Height := setY;
+        width := setX
+      end;
+    end else form1.setCompIMG.Width := 10 + 2;
+    end else form1.setCompIMG.Height := 10 + 2;
+    form1.TrackBar4.Position := setX;
+    form1.TrackBar3.Position := setY;
+    form1.ComboBox5.Text := inttostr(setX);
+    form1.ComboBox4.Text := inttostr(setY);
+    form1.UpDown4.Position := setX;
+    form1.UpDown3.Position := setY;
+  end;
+end;
 
 end.
