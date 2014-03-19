@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  quickrpt, Qrctrls, ExtCtrls, StdCtrls,Jpeg, ComCtrls;
+  quickrpt, Qrctrls, ExtCtrls, StdCtrls,Jpeg, ComCtrls, Spin;
 
 type
   TCompList = class(TList)
@@ -13,6 +13,7 @@ type
     procedure Put(Index: Integer; const Value: TControl);
   public
     property Items[Index: Integer]: TControl read Get write Put; default;
+     destructor Destroy; override;
   end;
 
   TForm1 = class(TForm)
@@ -96,17 +97,25 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure setCompIMGMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure ComboBox2KeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure ComboBox2KeyPress(Sender: TObject; var Key: Char);
+    procedure Memo1Change(Sender: TObject);
   private
     { Private 宣言 }
     QRMemo1 : TQRRichText;
     savedir:string;
     crentDir,SearchDir:String;
     waku_move_sw:boolean;
-    waku_size_sw:boolean;
+    waku_sizeY_sw,waku_sizeX_sw:boolean;
+    dwncount:integer;
+    ptX,ptY:integer;
   public
     { Public 宣言 }
+    compset:TMemo;
+    tempmemo:string;
     comp,qrcomp:TCompList;
-    setprjdir:String;
+    setprjdir,setdir:String;
     qrimg:array [0..30] of Tqrimage;
     QRLabel:array [0..30] of TQRMemo;
     QRMemo:array [0..30] of TQRMemo;
@@ -135,7 +144,14 @@ begin
   inherited Put( Index, Value );
 end;
 
-
+destructor TCompList.Destroy;
+var
+  i: Integer;
+begin
+  for i := 0 to Self.Count - 1 do
+    Self.Items[i].Free;
+  inherited Destroy;
+end;
 
 
 function TForm1.resetprot:boolean;
@@ -153,6 +169,23 @@ begin
  end;
 end;
 
+function resetcomp:boolean;
+var
+  i:integer;
+begin
+ with form1 do begin
+  combobox6.Items.Clear;
+  combobox6.Text := '';
+  for i := 0 to comp.Count -1 do begin
+     try
+       comp.Items[0].free;
+     except end;
+     try
+       comp.Delete(0);
+     except end;
+  end;
+ end;
+end;
 
 function EnumFileFromDir(SearchDir: string): boolean;
 var
@@ -205,6 +238,15 @@ begin
   end;
 end;
 
+function setSizeCombo:boolean;
+begin
+  with form1 do begin
+    updown1.Position := 50;
+    updown2.Position := 50;
+    updown3.Position := 50;
+    updown4.Position := 50;
+  end;
+end;
 
 function setMeisiSize:boolean;
 begin
@@ -354,12 +396,14 @@ end;
 
 
 
-function create_memo(savefile:string;i:integer;memo,m:TMemo):boolean;
+function create_memo(savefile:string;i:integer;memo,m:TMemo;sw:boolean):boolean;
 begin
   with form1 do begin
     m.Text := memo.Text;
     m.Font := memo.Font;
-    m.Lines.SaveToFile( savefile);
+    //showmessage(m.Lines.text);
+    if sw then
+      m.Lines.SaveToFile( {ExtractFileName}( savefile) );
     with comp.Items[i] do begin
       Hint := savefile;
       m.top := form1.UpDown1.Position;
@@ -368,13 +412,14 @@ begin
       m.Width := form1.UpDown4.Position;
       m.Visible := true;
       m.Parent := Parent;
+      m.onChange := Form1.Memo1Change;
     end;
     try
       comp.Items[i].free;
     except end;
     comp.Items[i] := m;
     comp.Items[i].Tag := 2;
-    comp.Items[i].hint := savefile + ';' + m.Font.Name + ';' + inttostr(m.Font.Size);
+    comp.Items[i].hint := form1.setdir + ExtractFileName(savefile) + ';' + m.Font.Name + ';' + inttostr(m.Font.Size);
     //showmessage(comp.Items[i].Hint);
   end;
 end;
@@ -390,8 +435,8 @@ begin
         exit;
       B := TBitmap.Create;
       J :=TJpegImage.Create;
-      J.LoadFromFile(opendialog1.FileName);
-      J.SaveToFile( savefile);
+      J.LoadFromFile(opendialog1.filename);
+      J.SaveToFile( savefile );
       B.Assign(J);
       img.Picture.Assign(B);
       B.Free;
@@ -400,7 +445,7 @@ begin
   end;
 
   with form1.comp.Items[i] do begin
-      Hint := form1.setprjdir + '\' + savefile;
+      Hint := form1.setdir + '\' + savefile;
       img.top := form1.TrackBar1.Position;
       img.Left := form1.TrackBar2.Position;
       img.Width := form1.TrackBar4.Position;
@@ -414,7 +459,7 @@ begin
       form1.comp.Items[i].free;
     except end;
     form1.comp.Items[i] := img;
-    form1.comp.Items[i].hint := savefile;
+    form1.comp.Items[i].hint := form1.setdir +ExtractFileName(savefile);
     form1.comp.Items[i].Tag := 1;
  // end;
 end;
@@ -427,6 +472,8 @@ begin
     Left   := lf;
     width  := dt;
     height := ht;
+    if cmp = TMemo.Create(form1) then
+      Name := 'm' + inttostr(i);
     Hint := '';
     Tag := i;
     Enabled := true;
@@ -458,7 +505,8 @@ begin
     create_comp(TImage.Create(form1),form1.MeisiForm,1,tp,lf,dt,ht);
     create_pic(dir + inttostr(form1.comp.count-1),form1.comp.Count -1,TImage.Create(form1),true);
   end else if s = 'メモ' then begin
-   create_comp(TMemo.Create(form1),form1.MeisiForm,2,tp,lf,dt,ht);
+   form1.compset := TMemo.Create(form1);
+   create_comp(form1.compset,form1.MeisiForm,2,tp,lf,dt,ht);
   end else if s = 'お絵描き領域' then begin
     create_comp(TImage.Create(form1),form1.MeisiForm,1,tp,lf,dt,ht);
     create_pic(dir + inttostr(form1.comp.count-1),form1.comp.Count -1,TImage.Create(form1),true);
@@ -494,10 +542,14 @@ begin
   i1 := 0;
   while i < SL.Count -1 do begin
     if SL[i] = '2' then begin
-      create_comp(TMemo.Create(form1),form1.MeisiForm,1,0,0,10,10);
+      try
+        create_comp(TMemo.Create(form1),form1.MeisiForm,1,0,0,10,10);
+      except end;
       cmpname := 'メモ';
     end else if SL[i] = '1' then begin
-      create_comp(TImage.Create(form1),form1.MeisiForm,2,0,0,10,10);
+      try
+        create_comp(TImage.Create(form1),form1.MeisiForm,2,0,0,10,10);
+      except end;
       cmpname := '写真';
     end;
 
@@ -546,13 +598,15 @@ begin
       end else if cmpname = 'メモ' then begin
         if st.Count > 0 then begin
           try
-            if st[0] = null then
-              m.Lines.LoadFromFile(st[0]);
+            //if st[0] = null then
+            m.Lines.LoadFromFile(st[0]);
+            //showmessage(st[0]);
           except end;
           m.Font.Name := st[1];
           m.Font.Size := strtoint(st[2]);
         end;
-        create_memo(hint,form1.comp.Count-1,M,Tmemo.Create(form1));
+        //showmessage(hint);
+        create_memo(st[0],form1.comp.Count-1,M,Tmemo.Create(form1),false);
       end;
       i := i + 6;
       inc(i1);
@@ -589,7 +643,7 @@ begin
   while i < form1.comp.Count do begin
     with form1.comp.Items[i] do begin
       SL.add(inttostr(tag));
-      SL.add( form1.savedir + hint);
+      SL.add( {form1.savedir +} hint);
       SL.add(inttostr(TOP));
       SL.add(inttostr(LEFT));
       SL.add(inttostr(Height));
@@ -655,7 +709,8 @@ var
           //showmessage(st[0]);
           B.Assign(J);
           qri.Picture.Assign(B);
-          create_qrcomp(qri,form2.QuickRep1,tag,tp + top,lf + left,height,width);
+          qri.Stretch := true;
+          create_qrcomp(qri,form2.QuickRep1,tag,tp + top,lf + left,width,height);
           B.Free;
           J.Free;
         except end;
@@ -731,21 +786,23 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   //createmeomo;
+  dwncount := 0;
   comp := TCompList.Create;
   comp.clear;
   QrComp := TCompList.Create;
   QrComp.clear;
   setMeisiSize;
+  setSizeCombo;
   //form1.setcompIMG := Timage.Create(form1);
   with form1.setcompIMG do begin
     parent := form1.MeisiForm;
     visible := true;
   end;
   setMoveCompSet(
-    strtoint(combobox2.text),
-    strtoint(combobox3.text),
-    strtoint(combobox4.text),
-    strtoint(combobox5.text)
+    50,
+    50,
+    50,
+    50
   );
   form1.crentdir := ExtractFilePath( Paramstr(0) );
   SearchDir := ExtractFilePath( Paramstr(0) );
@@ -884,6 +941,7 @@ begin
       setfilename(st,memo1);
       if st.Count > 0 then begin
         try
+          //showmessage(st[0]);
           memo1.Lines.LoadFromFile(st[0]);
         except end;
         memo1.Font.Name := st[1];
@@ -903,11 +961,11 @@ begin
   savedir := form1.setprjdir;
   if 0 < ansipos('メモ',combobox6.Text) then begin
     try
-      create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1));
+      create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,Tmemo.Create(form1),true);
     except end;
   end else if 0 < ansipos('写真',combobox6.Text) then begin
     try
-      create_PIC(inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Image1,false);
+      create_PIC( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Image1,false);
     except end;
   end;
 
@@ -957,9 +1015,11 @@ end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
+  resetcomp;
   if -1 = form1.ListBox1.Items.IndexOf(edit1.Text) then begin
     CreateDir( ExtractFilePath( Paramstr(0) ) + edit1.Text);
     form1.setprjdir := ExtractFilePath( Paramstr(0) ) + edit1.Text + '\';
+    form1.setdir := {ExtractFilePath( Paramstr(0) ) +} edit1.Text + '\';
     SearchDir := ExtractFilePath( Paramstr(0) );
     listbox1.Items.Clear;
     EnumFileFromDir(SearchDir);
@@ -977,8 +1037,10 @@ procedure TForm1.ListBox1DblClick(Sender: TObject);
 var
   loadfile:string;
 begin
+  resetcomp;
   loadfile := ExtractFilePath( Paramstr(0) ) + listbox1.Items[listbox1.itemindex] +'\Meisi.mpr';
    form1.setprjdir := ExtractFilePath( Paramstr(0) ) + listbox1.Items[listbox1.itemindex] + '\';
+   form1.setdir := {ExtractFilePath( Paramstr(0) ) +} listbox1.Items[listbox1.itemindex] + '\';
   loadSeting(loadfile);
 end;
 
@@ -1002,6 +1064,8 @@ procedure TForm1.wakuMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   waku_move_sw := true;
+  ptY := Y;
+  ptX := X;
 end;
 
 procedure TForm1.wakuMouseUp(Sender: TObject; Button: TMouseButton;
@@ -1018,8 +1082,8 @@ var
 begin
   if waku_move_sw then begin
     with form1.setCompIMG do begin
-      setY := top + Y;
-      setX := left + x;
+      setY := top + Y - ptY +8;//form1.SpinEdit1.Value;
+      setX := left + x - ptX +2;//form1.SpinEdit2.Value;
       top := setY;
       left := setX;
     end;
@@ -1035,13 +1099,26 @@ end;
 procedure TForm1.setCompIMGMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  waku_size_sw := true;
+  if ( Y > 12 ) and ( X > 4 ) then begin
+    if ( X > form1.setcompimg.width -10 ) and ( Y > form1.setcompimg.Height -10 ) then begin
+      waku_sizeY_sw := true;
+      waku_sizeX_sw := true;
+    end else if X > form1.setcompimg.width -10 then begin
+      waku_sizeY_sw := true;
+    end else if Y > form1.setcompimg.Height -10 then begin
+      waku_sizeX_sw := true;
+    end;
+    {waku_move_sw := true;
+    ptY := Y;
+    ptX := X;}
+  end
 end;
 
 procedure TForm1.setCompIMGMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  waku_size_sw := not true;
+  waku_sizeY_sw := not true;
+  waku_sizeX_sw := not true;
   changtrackbar;
 end;
 
@@ -1050,31 +1127,86 @@ procedure TForm1.setCompIMGMouseMove(Sender: TObject; Shift: TShiftState;
 var
   setX,setY:integer;
 begin
-  if waku_size_sw then begin
-  
-    if form1.setCompIMG.Height > 10 then begin
+  if waku_sizeY_sw then begin
     if form1.setCompIMG.Width > 10 then begin
       with form1.setCompIMG do begin
-        setY :=  Y;
         setX :=  X;
-        Height := setY;
         width := setX
       end;
       with form1.waku do begin
-        setY :=  Y -16;
         setX :=  X -8;
-        Height := setY;
         width := setX
       end;
+      form1.TrackBar4.Position := setX;
+      form1.ComboBox5.Text := inttostr(setX);
+      form1.UpDown4.Position := setX;
     end else form1.setCompIMG.Width := 10 + 2;
+  end;
+  if waku_sizeX_sw then begin
+    if form1.setCompIMG.Height > 10 then begin
+      with form1.setCompIMG do begin
+        setY :=  Y;
+        Height := setY
+      end;
+      with form1.waku do begin
+        setY := Y -8;
+        Height := setY
+      end;
+      form1.TrackBar3.Position := setY;
+      form1.ComboBox4.Text := inttostr(setY);
+      form1.UpDown3.Position := setY;
     end else form1.setCompIMG.Height := 10 + 2;
-    form1.TrackBar4.Position := setX;
-    form1.TrackBar3.Position := setY;
-    form1.ComboBox5.Text := inttostr(setX);
-    form1.ComboBox4.Text := inttostr(setY);
-    form1.UpDown4.Position := setX;
-    form1.UpDown3.Position := setY;
   end;
 end;
 
+procedure TForm1.ComboBox2KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  //if (key <> null)   then begin
+   // key := word(0);
+    //showmessage('aa');
+ // end
+end;
+
+procedure TForm1.ComboBox2KeyPress(Sender: TObject; var Key: Char);
+var
+  i,i1:integer;
+begin
+  //showmessage(inttostr(dwncount));
+  {if key = char(dwncount) then begin
+    dwncount := word(key) * 10;
+  end else begin
+    dwncount := word(key);
+  end;
+  for i := 0 to TComboBox(Form1.ActiveControl).items.count -1 do begin
+    i1 := ansipos(inttostr(dwncount),TComboBox(Form1.ActiveControl).items[i]);
+    if 0 < i1 then begin
+      dwncount := i1;
+
+      break
+    end;
+  end;}
+  TComboBox(Form1.ActiveControl).itemIndex := i;
+  key := chr(0);
+  PostMessage(TComboBox(Form1.ActiveControl).Handle, CB_SHOWDROPDOWN, 1, 0);
+end;
+
+
+procedure TForm1.Memo1Change(Sender: TObject);
+var
+  i:integer;
+  cmpmemo:TComponent;
+begin
+  //ここに、メモ保存処理を記述する。
+  for i := 0 to comp.Count -1 do begin
+    if sender = comp.Items[i] then begin
+      //cmpmemo := FindComponent('m' + inttostr(i));
+      
+      create_memo( form1.setprjdir + inttostr(i),i,compset,Tmemo.Create(form1),true);
+    end;
+  end;
+
+end;
+
 end.
+
