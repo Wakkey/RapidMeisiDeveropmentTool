@@ -1671,7 +1671,8 @@ var
   Document   : Variant;
   TextCursor : Variant;
   set_s1 :TStringList;
-  url :string;
+  url,s,s1 :string;
+  i:integer;
   J:TJPegImage;
   B:TBitmap;
   function setname(st:TStringList;s:string):boolean;
@@ -1730,9 +1731,22 @@ begin
   end;
   try
   set_s1 := TStringlIST.Create;
-  url := ansitoutf8(ExtractFilePath( Paramstr(0) ) + 'LabelPrint.ods');
+
   //setname(set_s1,url);
-  showmessage(url);
+  showmessage('OpenOfficeの設定で、マクロを有効にしてください' + char(13) +
+  '印刷時にオープンオフィスのマクロを使います');
+  s := form1.setprjdir;
+  s1 := '';
+  for i := 0 to length(s)-1 do begin
+    s1 := s1 + s[i]
+  end;
+  //showmessage(s1);
+ s := ExtractFileExt(s1);
+   if s = '.Label' then begin
+     url := ansitoutf8(ExtractFilePath( Paramstr(0) ) + 'LabelPrint.ods');
+   end else if s = '.Meisi' then begin
+     url := ansitoutf8(ExtractFilePath( Paramstr(0) ) + 'MeisiPrint.ods');
+   end;
   OpenDocument(url);
   //ShellExecute(Handle, 'OPEN', pchar(url), '', '', SW_SHOW);
   except
