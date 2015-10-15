@@ -24,6 +24,8 @@ type
   TForm1 = class(TForm)
    Button1: TButton;
    Button3: TButton;
+   Image2: TImage;
+   Label5: TLabel;
    MeisiForm: TPanel;
    MeisiPIc: TImage;
     Panel4: TPanel;
@@ -79,6 +81,7 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
+    procedure ListBox1Click(Sender: TObject);
     procedure Memo1Change(Sender: TObject);
     procedure ListBox1DblClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
@@ -130,7 +133,7 @@ type
     bmp_base,meisi_base:TBitmap;
   public
     { Public 宣言 }
-    compset:TMemo;
+    compset:TLabel;
     tempmemo:string;
     comp,qrcomp:TCompList;
     setprjdir,setdir:String;
@@ -196,7 +199,9 @@ begin
                (Rec.Name <> '.') and (Rec.Name <> '..') then
            begin
              //見つかったフォルダを追加
-             form1.ListBox1.Items.Add(Rec.Name);
+             if (ExtractFIleExt(Rec.Name) = '.Meisi') or (ExtractFIleExt(Rec.Name) = '.Label') then begin
+               form1.ListBox1.Items.Add(Rec.Name);
+             end;
            end;
        until (FindNextUTF8(Rec) { *Converted from FindNext* } <> 0);
        Result :=true;
@@ -438,22 +443,28 @@ end;
 
 
 
-function create_memo(savefile:string;i:integer;memo:Tmemo;m:TLabel;sw:boolean):boolean;
+function create_memo(savefile:string;i:integer;memo,m:TLabel;sw:boolean):boolean;
 var
   s:string;
   t:TfontStyles;
   i1:integer;
+  st:TStringList;
 begin
   with form1 do begin
     {for i1 := 0 to memo.Lines.Count -1 do begin
       memo.Lines[i1] := memo.Lines[i1] + ' ';
     end;}
-    m.Caption := memo.Text;
+    m.Caption := memo.Caption;
     m.Font := memo.Font;
     m.WordWrap:= true;
+    m.AutoSize := false;
     //showmessage(m.Lines.text);
-    if sw then
-      memo.Lines.SaveToFile( {ExtractFileName}( savefile) );
+    if sw then begin
+      st := TStringList.Create;
+      st.Text:= memo.Caption;
+      st.SaveToFile( {ExtractFileName}utf8toansi( savefile) );
+      st.Free;
+    end;
     with comp.Items[i] do begin
       Hint := savefile;
       m.top := form1.UpDown1.Position;
@@ -513,7 +524,7 @@ begin
       B := TBitmap.Create;
       J :=TJpegImage.Create;
       J.LoadFromFile(savefile);
-      J.SaveToFile( savefile );
+      //J.SaveToFile( savefile );
       B.Assign(J);
       img.Picture.Assign(B);
       B.Free;
@@ -550,7 +561,7 @@ begin
     Left   := lf;
     width  := dt;
     height := ht;
-    if cmp = TMemo.Create(form1) then
+    if cmp = TLabel.Create(form1) then
       Name := 'm' + inttostr(i);
     Hint := '';
     Tag := i;
@@ -604,10 +615,13 @@ begin
     create_comp(TImage.Create(form1),form1.MeisiForm,1,tp,lf,dt,ht);
     create_pic(dir + inttostr(form1.comp.count-1),form1.comp.Count -1,TImage.Create(form1),true);
   end else if s = 'メモ' then begin
-   form1.compset := TMemo.Create(form1);
-   form1.compset.ReadOnly:= true;
-   form1.compset.BorderStyle:= bsnone;
-   form1.compset.Text:= form1.Memo1.Text;
+   form1.compset := TLabel.Create(form1);
+   form1.Memo1.Lines.Clear;
+   //form1.compset.ReadOnly:= true;
+   //form1.compset.BorderStyle:= bsnone;
+   form1.compset.AutoSize:= false;
+   form1.compset.WordWrap:= true;
+   form1.compset.Caption:= form1.Memo1.Text;
    create_comp(form1.compset,form1.MeisiForm,2,tp,lf,dt,ht);
   end else if s = 'お絵描き領域' then begin
     create_comp(TImage.Create(form1),form1.MeisiForm,1,tp,lf,dt,ht);
@@ -624,9 +638,9 @@ var
   i,i1,i2,i3,i4,i5:integer;
   SL:TStringList;
   cmpname:string;
-  M:TMemo;
+  M:Tlabel;
   s1,s2,s3:string;
-  st:TStringList;
+  st,st2:TStringList;
   img:TImage;
   J:TJPegImage;
   B:TBitmap;
@@ -636,7 +650,7 @@ begin
   SL.LoadFromFile(utf8toansi(s));
   //showmessage(sl.Text);
   sl.Text:= ansitoutf8(sl.Text);
-  M := TMemo.Create(form1);
+  M := TLabel.Create(form1);
   m.Parent := form1;
   m.visible := false;
   m.Caption:= '';
@@ -690,39 +704,31 @@ begin
       i2 := 1;
       i4 := 0;
       s3 := '';
+      //showmessage(s2);
       if 0 = ansipos(';',s2) then begin
         st.Text := s2;
+        //showmessage(st.Text);
       end else begin
-        s2 := s2 + ';';
-        while i2 > 0 do begin
+        //s2 := s2 + ';';
+        while i2 >= 1 do begin
           i2 := ansipos(';',s2);
-          if i2 = 0 then begin
-            //exit;
-          end else begin
+          //showmessage(s2);
+          st.Text:= s2;
           for i3 := i4 to i2 -1 do begin
             s3 := s3 + s2[i3];
           end;
           //showmessage(s2);
           s2[i2] := chr(13);
+
           i4 := i2 -1;
+          //showmessage('aaa' + st.Text);
           st.Add(s3);
-          //
-          //showmessage(s2);
+
           s3 := '';
-          try
-          //st.Text := s2;
-          except
-            showmessage('aaa');
 
-          end;
-          //showmessage(st.Text);
         end;
-          st.Text := s2;
-       end;
-
-
       end;
-      //showmessage(cmpname);
+      //showmessage(st.Text + ' ' + s2);
       if cmpname = '写真' then begin
         img := TImage.Create(form1);
         if st.Count > 0 then begin
@@ -744,8 +750,10 @@ begin
             //if st[0] = null then
             //showmessage(ansitoutf8(st[0]));
             //showmessage(utf8toansi(st[0]));
-
-            m.Lines.LoadFromFile(utf8toansi(st[0]));
+            st2 := TStringLIst.Create;
+            st2.LoadFromFile(utf8toansi(st[0]));
+            m.Caption:= st2.Text;
+            st2.Free;
           except end;
           m.Font.Name := st[1];
           m.Font.Size := strtoint(st[2]);
@@ -772,6 +780,7 @@ begin
           end;
         end;
         //showmessage(hint);
+        //showmessage(st.Text);
         create_memo(st[0],form1.comp.Count-1,M,TLabel.Create(form1),false);
       end;
       i := i + 6;
@@ -931,8 +940,8 @@ var
   searchdir:string;
 begin
   if form1.ListBox1.Items.Count = 0 then begin
-    CreateDirUTF8(ansitoutf8(ExtractFilePath( Paramstr(0) )) + 'サンプル.Label'); { *Converted from CreateDir* }
-    st := TStringList.Create;
+    //CreateDirUTF8(ansitoutf8(ExtractFilePath( Paramstr(0) )) + 'サンプル.Label'); { *Converted from CreateDir* }
+    {st := TStringList.Create;
     st.Text :=
     '2' + chr(13)
     + '0;ＭＳ Ｐゴシック;9' + chr(13)
@@ -965,8 +974,8 @@ begin
     loadseting(ExtractFilePath( Paramstr(0) ) + '名刺サンプル' + '\Meisi.mpr');}
     SearchDir := ansitoutf8(ExtractFilePath( Paramstr(0) ));
     EnumFileFromDir(SearchDir);
-    form1.ListBox1.ItemIndex := 0;
-    Form1.ListBox1DblClick(Form1.ListBox1);
+    //form1.ListBox1.ItemIndex := 0;
+    //Form1.ListBox1DblClick(Form1.ListBox1);
   end;
 end;
 
@@ -1015,6 +1024,7 @@ var
   s1:string;
 begin
   resetcomp;
+  form1.MeisiForm.Visible := true;
   if -1 = form1.ListBox1.Items.IndexOf(edit1.Text) then begin
     s1 := ansitoutf8(ExtractFilePath( Paramstr(0) )) + edit1.Text + '.Label';
     CreateDirUTF8((s1));{ *Converted from CreateDir* }
@@ -1062,11 +1072,22 @@ begin
 end;
 
 procedure TForm1.Button7Click(Sender: TObject);
+var
+  l:TLabel;
 begin
     savedir := form1.setprjdir;
   if 0 < ansipos('メモ',combobox6.Text) then begin
     try
-      create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Memo1,TLabel.Create(form1),true);
+      l := TLabel.Create(form1);
+      l.Visible:= false;
+      l.WordWrap:=true;
+      l.AutoSize:=false;
+      l.Caption:= memo1.Text;
+      l.Font := memo1.Font;
+      form1.Label5 := l;
+      form1.Label5.Visible:= true;
+      create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,l,TLabel.Create(form1),true);
+      l.Free;
     except end;
   end else if 0 < ansipos('写真',combobox6.Text) then begin
     try
@@ -1401,6 +1422,8 @@ var
 begin
   if 0 < ansipos('写真',combobox6.Text) then begin
     try
+      memo1.Visible := false;
+      form1.Label5.Visible:= false;
       set_editcomp(combobox6.itemIndex,image1);
       B := TBitmap.Create;
       J :=TJpegImage.Create;
@@ -1409,24 +1432,33 @@ begin
       if st.Count > 0 then begin
         try
           SetCurrentDirUTF8(ansitoutf8(ExtractFilePath( Paramstr(0) ))); { *Converted from SetCurrentDir* }
-          //showmessage(st.Text);
-          J.LoadFromFile(st.Text);
+          showmessage(st.Text);
+          J.LoadFromFile(st[0]);
           B.Assign(J);
         except end;
+
         image1.Picture.Assign(B);
+        image2.Picture.Assign(B);
       end;
       b.Free;
       j.Free;
       image1.Stretch := true;
+      image2.Stretch := true;
       image1.Visible := true;
-      memo1.Visible := not true;
+      image2.Visible := true;
+
     except
 
     end;
   end else if 0 < ansipos('メモ',combobox6.Text) then begin
     try
       set_editcomp(combobox6.itemIndex,memo1);
+      try
       image1.Visible := not true;
+      image2.Visible := not true;
+      except
+
+      end;
       ST := TStringList.Create;
 
       setfilename(st,memo1);
@@ -1437,8 +1469,8 @@ begin
           //showmessage(utf8toansi(st[0]));
           //showmessage(utf8decode(st[0]));
 
-          memo1.Lines.LoadFromFile(utf8toansi(st[0]));
-          memo1.Text:= (memo1.Text);
+          memo1.Lines.LoadFromFile((st[0]));
+          //memo1.Text:= (memo1.Text);
         except end;
         memo1.Font.Name := st[1];
         //memo1.ReadOnly:= not true;
@@ -1446,6 +1478,12 @@ begin
         memo1.Font.Size := strtoint(st[2]);
       end;
       memo1.Visible := true;
+      form1.Label5.Visible:= true;
+      form1.Label5.Font := form1.Memo1.Font;
+      form1.Label5.AutoSize:= false;
+      form1.Label5.WordWrap:=true;
+      form1.Label5.Caption:= form1.Memo1.Lines.Text;
+
     except
 
     end;
@@ -1483,13 +1521,22 @@ end;
 
 procedure TForm1.ListBox1DblClick(Sender: TObject);
 var
-  s,loadfile:string;
-
+  s,s1,loadfile:string;
+  i:integer;
 begin
+  if form1.ListBox1.ItemIndex = -1 then
+    exit;
   resetcomp;
+  form1.MeisiForm.Visible := true;
   loadfile := ansitoutf8(ExtractFilePath( Paramstr(0) )) + listbox1.Items[listbox1.itemindex] +'\Meisi.mpr';
    form1.setprjdir := ansitoutf8(ExtractFilePath( Paramstr(0) )) + listbox1.Items[listbox1.itemindex] + '\';
-   s := ExtractFileExt(form1.setprjdir);
+   s := form1.setprjdir;
+     s1 := '';
+     for i := 0 to length(s)-1 do begin
+       s1 := s1 + s[i]
+     end;
+     //showmessage(s1);
+    s := ExtractFileExt(s1);
    if s = '.Label' then begin
      Form1.MeisiForm.Width:= 266;
      Form1.MeisiForm.Height:=142;
@@ -1520,6 +1567,11 @@ begin
 end;
 
 procedure TForm1.ComboBox1Change(Sender: TObject);
+begin
+
+end;
+
+procedure TForm1.ListBox1Click(Sender: TObject);
 begin
 
 end;
@@ -1775,6 +1827,7 @@ var
   s1:string;
 begin
   resetcomp;
+  form1.MeisiForm.Visible := true;
   if -1 = form1.ListBox1.Items.IndexOf(edit1.Text) then begin
     s1 := ansitoutf8(ExtractFilePath( Paramstr(0) )) + edit1.Text + '.Meisi';
     CreateDirUTF8((s1));{ *Converted from CreateDir* }
@@ -1823,11 +1876,12 @@ end;
 procedure TForm1.setCompIMGMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if ( Y > 12 ) and ( X > 4 ) then begin
-    if ( X > form1.setcompimg.width -10 ) and ( Y > form1.setcompimg.Height -10 ) then begin
+  //if ( Y > 12 ) and ( X > 4 ) then begin
+    form1.setCompIMG.ShowHint := true;
+    if ( X > form1.setcompimg.width -15 ) and ( Y > form1.setcompimg.Height -25 ) then begin
       waku_sizeY_sw := true;
       waku_sizeX_sw := true;
-    end else if X > form1.setcompimg.width -10 then begin
+    end else if X > form1.setcompimg.width -15 then begin
       waku_sizeY_sw := true;
     end else if Y > form1.setcompimg.Height -25 then begin
       waku_sizeX_sw := true;
@@ -1835,7 +1889,7 @@ begin
     {waku_move_sw := true;
     ptY := Y;
     ptX := X;}
-  end
+  //end
 end;
 
 procedure TForm1.setCompIMGMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -1844,34 +1898,61 @@ var
   setX,setY:integer;
 begin
   if waku_sizeY_sw then begin
-    if form1.setCompIMG.Width > 10 then begin
+    form1.setCompIMG.Hint := 'SizeX:' + inttostr(form1.setCompIMG.Width) + ' SizeY:' + inttostr(form1.setCompIMG.Height);
+    if form1.setCompIMG.Width > 20 then begin
       with form1.setCompIMG do begin
         setX :=  X;
         width := setX
       end;
       with form1.waku do begin
-        setX :=  X -8;
+        setX :=  X -10;
         width := setX
       end;
       form1.TrackBar4.Position := setX;
       form1.ComboBox5.Text := inttostr(setX);
       form1.UpDown4.Position := setX;
-    end else form1.setCompIMG.Width := 10 + 2;
+      if form1.setCompIMG.Width < 20 then begin
+        form1.setCompIMG.Width := 30;
+        form1.waku.Width:= 20;
+        form1.TrackBar4.Position := 30;
+        form1.ComboBox5.Text := inttostr(30);
+        form1.UpDown4.Position := 30
+      end;
+    end else begin
+     form1.setCompIMG.Width := 30;
+     form1.waku.Width:= 20;
+     form1.TrackBar4.Position := 30;
+     form1.ComboBox5.Text := inttostr(30);
+     form1.UpDown4.Position := 30
+    end;
   end;
   if waku_sizeX_sw then begin
-    if form1.setCompIMG.Height > 25 then begin
+    if form1.setCompIMG.Height > 20 then begin
       with form1.setCompIMG do begin
         setY :=  Y;
         Height := setY
       end;
       with form1.waku do begin
-        setY := Y -8;
+        setY := Y-10;
         Height := setY
       end;
       form1.TrackBar3.Position := setY;
       form1.ComboBox4.Text := inttostr(setY);
       form1.UpDown3.Position := setY;
-    end else form1.setCompIMG.Height := 25 + 2;
+      if form1.setCompIMG.Height < 20 then begin
+        form1.setCompIMG.Height := 30;
+        form1.waku.Height:= 20;
+        form1.TrackBar3.Position := 30;
+        form1.ComboBox4.Text := inttostr(30);
+        form1.UpDown3.Position := 30
+      end;
+    end else begin
+     form1.setCompIMG.Height := 30;
+     form1.waku.Height:= 20;
+     form1.TrackBar3.Position := 30;
+     form1.ComboBox4.Text := inttostr(30);
+     form1.UpDown3.Position := 30
+    end;
   end;
 end;
 
@@ -1881,6 +1962,7 @@ begin
   waku_sizeY_sw := not true;
   waku_sizeX_sw := not true;
   changtrackbar;
+  form1.setCompIMG.ShowHint := not true;
 end;
 
 procedure TForm1.TrackBar1Change(Sender: TObject);
@@ -1927,6 +2009,7 @@ procedure TForm1.wakuMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   waku_move_sw := true;
+  form1.waku.ShowHint := true;
   ptY := Y;
   ptX := X;
 end;
@@ -1937,6 +2020,7 @@ var
   setx,sety:integer;
 begin
   if waku_move_sw then begin
+    form1.waku.Hint := 'X:' + inttostr(form1.waku.Top) + ' Y:' + inttostr(form1.waku.Left);
     with form1.setCompIMG do begin
       setY := top + Y - ptY ;//form1.SpinEdit1.Value;
       setX := left + x - ptX ;//form1.SpinEdit2.Value;
@@ -1956,6 +2040,7 @@ procedure TForm1.wakuMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   waku_move_sw := not true;
+  form1.waku.ShowHint := not true;
   changtrackbar;
 end;
 
