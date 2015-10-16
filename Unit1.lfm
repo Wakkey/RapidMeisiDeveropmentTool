@@ -11,7 +11,7 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'Tahoma'
   OnCreate = FormCreate
-  LCLVersion = '1.4.0.4'
+  LCLVersion = '1.4.2.0'
   object Panel4: TPanel
     Left = 0
     Height = 386
@@ -43,6 +43,7 @@ object Form1: TForm1
         Font.Height = -12
         Font.Name = 'ＭＳ Ｐゴシック'
         ItemHeight = 0
+        OnClick = ListBox1Click
         OnDblClick = ListBox1DblClick
         ParentFont = False
         TabOrder = 0
@@ -59,13 +60,13 @@ object Form1: TForm1
         TabOrder = 1
         object Panel6: TPanel
           Left = 6
-          Height = 48
+          Height = 49
           Top = 25
-          Width = 116
+          Width = 117
           BevelInner = bvLowered
           BevelOuter = bvLowered
-          ClientHeight = 48
-          ClientWidth = 116
+          ClientHeight = 49
+          ClientWidth = 117
           TabOrder = 0
           object Button2: TButton
             Left = 0
@@ -203,20 +204,21 @@ object Form1: TForm1
           ClientWidth = 371
           TabOrder = 1
           object MeisiForm: TPanel
-            Left = 8
-            Height = 142
-            Top = 12
-            Width = 266
-            ClientHeight = 142
-            ClientWidth = 266
+            Left = 10
+            Height = 168
+            Top = 8
+            Width = 318
+            ClientHeight = 168
+            ClientWidth = 318
             Color = clWhite
             ParentColor = False
             TabOrder = 0
+            Visible = False
             object MeisiPIc: TImage
               Left = 1
-              Height = 140
+              Height = 166
               Top = 1
-              Width = 264
+              Width = 316
               Align = alClient
             end
             object setCompIMG: TGroupBox
@@ -227,6 +229,10 @@ object Form1: TForm1
               Caption = 'フォーカス'
               ClientHeight = 59
               ClientWidth = 93
+              Color = clSilver
+              ParentColor = False
+              ParentShowHint = False
+              ShowHint = True
               TabOrder = 0
               OnMouseDown = setCompIMGMouseDown
               OnMouseMove = setCompIMGMouseMove
@@ -237,12 +243,37 @@ object Form1: TForm1
                 Top = -8
                 Width = 88
                 BevelOuter = bvNone
+                ClientHeight = 52
+                ClientWidth = 88
                 Color = clWhite
                 ParentColor = False
                 TabOrder = 0
                 OnMouseDown = wakuMouseDown
                 OnMouseMove = wakuMouseMove
                 OnMouseUp = wakuMouseUp
+                object Image2: TImage
+                  Left = 0
+                  Height = 52
+                  Top = 0
+                  Width = 88
+                  Align = alClient
+                  OnMouseDown = wakuMouseDown
+                  OnMouseMove = wakuMouseMove
+                  OnMouseUp = wakuMouseUp
+                end
+                object Label5: TLabel
+                  Left = 0
+                  Height = 52
+                  Top = 0
+                  Width = 88
+                  Align = alClient
+                  AutoSize = False
+                  ParentColor = False
+                  WordWrap = True
+                  OnMouseDown = wakuMouseDown
+                  OnMouseMove = wakuMouseMove
+                  OnMouseUp = wakuMouseUp
+                end
               end
             end
           end
@@ -269,17 +300,17 @@ object Form1: TForm1
         ClientWidth = 556
         TabOrder = 0
         object ComboBox6: TComboBox
-          Left = 8
+          Left = 16
           Height = 21
           Top = 16
-          Width = 65
+          Width = 128
           ItemHeight = 13
           OnChange = ComboBox6Change
           Style = csDropDownList
           TabOrder = 0
         end
         object UpDown: TUpDown
-          Left = 73
+          Left = 144
           Height = 20
           Top = 16
           Width = 17
@@ -289,27 +320,27 @@ object Form1: TForm1
           Wrap = False
         end
         object Button5: TButton
-          Left = 95
+          Left = 88
           Height = 25
-          Top = 13
+          Top = 37
           Width = 75
           Caption = '削除'
           OnClick = Button5Click
           TabOrder = 2
         end
         object Button7: TButton
-          Left = 95
+          Left = 88
           Height = 25
-          Top = 37
+          Top = 61
           Width = 75
           Caption = '設定反映'
           OnClick = Button7Click
           TabOrder = 3
         end
         object Button10: TButton
-          Left = 95
+          Left = 96
           Height = 25
-          Top = 61
+          Top = 83
           Width = 75
           Caption = '背景指定'
           OnClick = Button10Click
@@ -328,7 +359,7 @@ object Form1: TForm1
         object Button8: TButton
           Left = 15
           Height = 25
-          Top = 63
+          Top = 61
           Width = 75
           Caption = 'フォント変更'
           OnClick = Button8Click
