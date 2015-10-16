@@ -251,25 +251,41 @@ object Form1: TForm1
                 OnMouseDown = wakuMouseDown
                 OnMouseMove = wakuMouseMove
                 OnMouseUp = wakuMouseUp
+<<<<<<< HEAD
                 object Image2: TImage
+=======
+                object Label5: TLabel
+>>>>>>> origin/master
                   Left = 0
                   Height = 52
                   Top = 0
                   Width = 88
                   Align = alClient
+<<<<<<< HEAD
+=======
+                  AutoSize = False
+                  ParentColor = False
+>>>>>>> origin/master
                   OnMouseDown = wakuMouseDown
                   OnMouseMove = wakuMouseMove
                   OnMouseUp = wakuMouseUp
                 end
+<<<<<<< HEAD
                 object Label5: TLabel
+=======
+                object Image2: TImage
+>>>>>>> origin/master
                   Left = 0
                   Height = 52
                   Top = 0
                   Width = 88
                   Align = alClient
+<<<<<<< HEAD
                   AutoSize = False
                   ParentColor = False
                   WordWrap = True
+=======
+>>>>>>> origin/master
                   OnMouseDown = wakuMouseDown
                   OnMouseMove = wakuMouseMove
                   OnMouseUp = wakuMouseUp

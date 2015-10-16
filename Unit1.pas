@@ -1084,9 +1084,14 @@ begin
       l.AutoSize:=false;
       l.Caption:= memo1.Text;
       l.Font := memo1.Font;
+<<<<<<< HEAD
       form1.Label5.Caption := memo1.Text;
       form1.Label5.Font := memo1.Font;
       form1.Label5.Visible:=true;
+=======
+      form1.Label5 := l;
+      form1.Label5.Visible:= true;
+>>>>>>> origin/master
       create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,l,TLabel.Create(form1),true);
       l.Free;
     except end;
@@ -1423,10 +1428,15 @@ var
 begin
   if 0 < ansipos('写真',combobox6.Text) then begin
     try
+<<<<<<< HEAD
       if memo1.Visible then
         memo1.Visible := false;
       if label5.Visible then
         form1.Label5.Visible:= false;
+=======
+      memo1.Visible := false;
+      form1.Label5.Visible:= false;
+>>>>>>> origin/master
       set_editcomp(combobox6.itemIndex,image1);
       B := TBitmap.Create;
       J :=TJpegImage.Create;
@@ -1435,7 +1445,11 @@ begin
       if st.Count > 0 then begin
         try
           SetCurrentDirUTF8(ansitoutf8(ExtractFilePath( Paramstr(0) ))); { *Converted from SetCurrentDir* }
+<<<<<<< HEAD
           //showmessage(st.Text);
+=======
+          showmessage(st.Text);
+>>>>>>> origin/master
           J.LoadFromFile(st[0]);
           B.Assign(J);
         except end;
@@ -1457,10 +1471,15 @@ begin
     try
       set_editcomp(combobox6.itemIndex,memo1);
       try
+<<<<<<< HEAD
         if image1.Visible then
           image1.Visible := not true;
         if image2.Visible then
           image2.Visible := not true;
+=======
+      image1.Visible := not true;
+      image2.Visible := not true;
+>>>>>>> origin/master
       except
 
       end;
@@ -1484,6 +1503,7 @@ begin
       end;
       memo1.Visible := true;
       form1.Label5.Visible:= true;
+<<<<<<< HEAD
    //   showmessage(form1.Memo1.Font.Name);
      // showmessage(form1.Label5.Font.Name);
 
@@ -1493,6 +1513,12 @@ begin
       //form1.Label5.AutoSize:= false;
       //form1.Label5.WordWrap:=true;
       form1.Label5.Caption:= form1.Memo1.Text;
+=======
+      form1.Label5.Font := form1.Memo1.Font;
+      form1.Label5.AutoSize:= false;
+      form1.Label5.WordWrap:=true;
+      form1.Label5.Caption:= form1.Memo1.Lines.Text;
+>>>>>>> origin/master
 
     except
 
