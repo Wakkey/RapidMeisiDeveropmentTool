@@ -1,10 +1,10 @@
 object Form1: TForm1
   Left = 338
-  Height = 386
-  Top = 186
+  Height = 383
+  Top = 187
   Width = 820
   Caption = 'Lapid Meisi Deveropment Tool'
-  ClientHeight = 386
+  ClientHeight = 383
   ClientWidth = 820
   Color = clBtnFace
   Font.Color = clWindowText
@@ -14,28 +14,28 @@ object Form1: TForm1
   LCLVersion = '1.4.2.0'
   object Panel4: TPanel
     Left = 0
-    Height = 386
+    Height = 383
     Top = 0
     Width = 136
     Align = alLeft
     Caption = 'Panel4'
-    ClientHeight = 386
+    ClientHeight = 383
     ClientWidth = 136
     TabOrder = 0
     object GroupBox8: TGroupBox
       Left = 1
-      Height = 304
-      Top = 81
+      Height = 274
+      Top = 108
       Width = 134
       Align = alClient
       Caption = 'プロジェクト一覧'
-      ClientHeight = 286
+      ClientHeight = 256
       ClientWidth = 130
       TabOrder = 0
       object ListBox1: TListBox
         Left = 0
-        Height = 198
-        Top = 88
+        Height = 176
+        Top = 80
         Width = 130
         Align = alClient
         Font.CharSet = SHIFTJIS_CHARSET
@@ -50,12 +50,12 @@ object Form1: TForm1
       end
       object Panel5: TPanel
         Left = 0
-        Height = 88
+        Height = 80
         Top = 0
         Width = 130
         Align = alTop
         BevelOuter = bvNone
-        ClientHeight = 88
+        ClientHeight = 80
         ClientWidth = 130
         TabOrder = 1
         object Panel6: TPanel
@@ -108,22 +108,23 @@ object Form1: TForm1
     end
     object GroupBox4: TGroupBox
       Left = 1
-      Height = 80
-      Top = 1
+      Height = 73
+      Top = 35
       Width = 134
       Align = alTop
       Caption = '印刷'
-      ClientHeight = 62
+      ClientHeight = 55
       ClientWidth = 130
       TabOrder = 1
       object print2: TButton
         Left = 24
         Height = 25
-        Top = 32
+        Top = 24
         Width = 75
         Caption = '印刷(一枚)'
         OnClick = print2Click
         TabOrder = 0
+        Visible = False
       end
       object Button1: TButton
         Left = 24
@@ -135,44 +136,62 @@ object Form1: TForm1
         TabOrder = 1
       end
     end
+    object Panel8: TPanel
+      Left = 1
+      Height = 34
+      Top = 1
+      Width = 134
+      Align = alTop
+      ClientHeight = 34
+      ClientWidth = 134
+      TabOrder = 2
+      object Button4: TButton
+        Left = 26
+        Height = 25
+        Top = 4
+        Width = 75
+        Caption = 'バージョン情報'
+        TabOrder = 0
+      end
+    end
   end
   object Panel2: TPanel
     Left = 136
-    Height = 386
+    Height = 383
     Top = 0
     Width = 684
     Align = alClient
     Caption = 'Panel2'
-    ClientHeight = 386
+    ClientHeight = 383
     ClientWidth = 684
     TabOrder = 1
     object Panel3: TPanel
       Left = 1
-      Height = 247
+      Height = 244
       Top = 138
       Width = 682
       Align = alClient
       Caption = 'Panel2'
-      ClientHeight = 247
+      ClientHeight = 244
       ClientWidth = 682
       TabOrder = 0
       object Panel7: TPanel
         Left = 1
-        Height = 245
+        Height = 242
         Top = 1
         Width = 680
         Align = alClient
-        ClientHeight = 245
+        ClientHeight = 242
         ClientWidth = 680
         TabOrder = 0
         object GroupBox5: TGroupBox
           Left = 376
-          Height = 243
+          Height = 240
           Top = 1
           Width = 303
           Align = alRight
           Caption = '編集領域'
-          ClientHeight = 225
+          ClientHeight = 222
           ClientWidth = 299
           TabOrder = 0
           object Image1: TImage
@@ -180,6 +199,8 @@ object Form1: TForm1
             Height = 105
             Top = 16
             Width = 105
+            OnClick = Image1Click
+            OnMouseDown = Image1MouseDown
           end
           object Memo1: TMemo
             Left = 8
@@ -195,12 +216,12 @@ object Form1: TForm1
         end
         object GroupBox6: TGroupBox
           Left = 1
-          Height = 243
+          Height = 240
           Top = 1
           Width = 375
           Align = alClient
           Caption = 'デザイン'
-          ClientHeight = 225
+          ClientHeight = 222
           ClientWidth = 371
           TabOrder = 1
           object MeisiForm: TPanel
@@ -251,41 +272,26 @@ object Form1: TForm1
                 OnMouseDown = wakuMouseDown
                 OnMouseMove = wakuMouseMove
                 OnMouseUp = wakuMouseUp
-<<<<<<< HEAD
                 object Image2: TImage
-=======
-                object Label5: TLabel
->>>>>>> origin/master
                   Left = 0
                   Height = 52
                   Top = 0
                   Width = 88
                   Align = alClient
-<<<<<<< HEAD
-=======
-                  AutoSize = False
-                  ParentColor = False
->>>>>>> origin/master
                   OnMouseDown = wakuMouseDown
                   OnMouseMove = wakuMouseMove
                   OnMouseUp = wakuMouseUp
                 end
-<<<<<<< HEAD
                 object Label5: TLabel
-=======
-                object Image2: TImage
->>>>>>> origin/master
                   Left = 0
                   Height = 52
                   Top = 0
                   Width = 88
                   Align = alClient
-<<<<<<< HEAD
                   AutoSize = False
                   ParentColor = False
                   WordWrap = True
-=======
->>>>>>> origin/master
+                  OnClick = Label5Click
                   OnMouseDown = wakuMouseDown
                   OnMouseMove = wakuMouseMove
                   OnMouseUp = wakuMouseUp
@@ -591,8 +597,8 @@ object Form1: TForm1
     end
   end
   object OpenDialog1: TOpenDialog
-    left = 179
-    top = 90
+    left = 272
+    top = 104
   end
   object FontDialog1: TFontDialog
     Font.CharSet = SHIFTJIS_CHARSET
@@ -601,7 +607,7 @@ object Form1: TForm1
     Font.Name = 'ＭＳ Ｐゴシック'
     MinFontSize = 0
     MaxFontSize = 0
-    left = 211
-    top = 90
+    left = 304
+    top = 104
   end
 end

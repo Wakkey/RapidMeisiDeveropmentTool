@@ -24,6 +24,7 @@ type
   TForm1 = class(TForm)
    Button1: TButton;
    Button3: TButton;
+   Button4: TButton;
    Image2: TImage;
    Label5: TLabel;
    MeisiForm: TPanel;
@@ -81,6 +82,10 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure ComboBox1Change(Sender: TObject);
+    procedure Image1Click(Sender: TObject);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Label5Click(Sender: TObject);
     procedure ListBox1Click(Sender: TObject);
     procedure Memo1Change(Sender: TObject);
     procedure ListBox1DblClick(Sender: TObject);
@@ -123,7 +128,7 @@ type
  private
     { Private 宣言 }
     QRMemo1 : TMemo;
-    savedir:string;
+    savedir,loadfile:string;
     crentDir,SearchDir:String;
     waku_move_sw:boolean;
     waku_sizeY_sw,waku_sizeX_sw:boolean;
@@ -473,6 +478,7 @@ begin
       m.Width := form1.UpDown4.Position;
       m.Visible := true;
       m.Parent := Parent;
+      m.OnClick:= form1.Label5.OnClick;
       //m.ReadOnly:= true;
       //m.BorderStyle:= bsnone;
       //m.onChange := Form1.Memo1Change;
@@ -517,6 +523,8 @@ begin
       J.SaveToFile( savefile );
       B.Assign(J);
       img.Picture.Assign(B);
+      img.OnClick:= form1.Image1.OnClick;
+      //form1.Image2.Picture.Assign(B);
       B.Free;
       J.Free;
 
@@ -527,6 +535,8 @@ begin
       //J.SaveToFile( savefile );
       B.Assign(J);
       img.Picture.Assign(B);
+      img.OnClick:= form1.Image1.OnClick;
+      //form1.Image2.Picture.Assign(B);
       B.Free;
       J.Free;
 
@@ -545,11 +555,18 @@ begin
   end;
   //if loadPIC then begin
     try
-      form1.comp.Items[i].free;
+      form1.comp.Items[i].Visible:= false;
     except end;
+
+    //form1.comp.Items[i].Create(form1);
     form1.comp.Items[i] := img;
+    form1.comp.Items[i].Visible:= true;
+    //showmessage(form1.setdir +ExtractFileName(savefile));
+   // showmessage(form1.comp.Items[i].hint);
+
     form1.comp.Items[i].hint := form1.setdir +ExtractFileName(savefile);
     form1.comp.Items[i].Tag := 1;
+
  // end;
 end;
 
@@ -758,6 +775,7 @@ begin
           m.Font.Name := st[1];
           m.Font.Size := strtoint(st[2]);
           m.Font.Color := strtoint(st[3]);
+
           if st.Count >= 5 then begin
             i5 := 1;
           end else begin
@@ -1051,6 +1069,10 @@ var
   i:integer;
 begin
    i := combobox6.ItemIndex;
+   if i = -1 then begin
+     showmessage('項目が選択されていません');
+     exit;
+   end;
    try
      comp.Items[i].free;
    except end;
@@ -1074,7 +1096,13 @@ end;
 procedure TForm1.Button7Click(Sender: TObject);
 var
   l:TLabel;
+  i:integer;
 begin
+  i := combobox6.ItemIndex;
+   if i = -1 then begin
+     showmessage('項目が選択されていません');
+     exit;
+   end;
     savedir := form1.setprjdir;
   if 0 < ansipos('メモ',combobox6.Text) then begin
     try
@@ -1084,20 +1112,19 @@ begin
       l.AutoSize:=false;
       l.Caption:= memo1.Text;
       l.Font := memo1.Font;
-<<<<<<< HEAD
+      l.OnClick:= form1.Image1.OnClick;
       form1.Label5.Caption := memo1.Text;
       form1.Label5.Font := memo1.Font;
       form1.Label5.Visible:=true;
-=======
-      form1.Label5 := l;
-      form1.Label5.Visible:= true;
->>>>>>> origin/master
       create_memo( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,l,TLabel.Create(form1),true);
       l.Free;
     except end;
   end else if 0 < ansipos('写真',combobox6.Text) then begin
     try
+      //loadSeting(form1.loadfile);
       create_PIC( form1.setprjdir + inttostr(combobox6.ItemIndex),combobox6.ItemIndex,Image1,false);
+      //form1.Button2Click(form1.button2);
+      //
     except end;
   end;
 end;
@@ -1428,15 +1455,10 @@ var
 begin
   if 0 < ansipos('写真',combobox6.Text) then begin
     try
-<<<<<<< HEAD
       if memo1.Visible then
         memo1.Visible := false;
       if label5.Visible then
         form1.Label5.Visible:= false;
-=======
-      memo1.Visible := false;
-      form1.Label5.Visible:= false;
->>>>>>> origin/master
       set_editcomp(combobox6.itemIndex,image1);
       B := TBitmap.Create;
       J :=TJpegImage.Create;
@@ -1445,11 +1467,7 @@ begin
       if st.Count > 0 then begin
         try
           SetCurrentDirUTF8(ansitoutf8(ExtractFilePath( Paramstr(0) ))); { *Converted from SetCurrentDir* }
-<<<<<<< HEAD
           //showmessage(st.Text);
-=======
-          showmessage(st.Text);
->>>>>>> origin/master
           J.LoadFromFile(st[0]);
           B.Assign(J);
         except end;
@@ -1471,15 +1489,10 @@ begin
     try
       set_editcomp(combobox6.itemIndex,memo1);
       try
-<<<<<<< HEAD
         if image1.Visible then
           image1.Visible := not true;
         if image2.Visible then
           image2.Visible := not true;
-=======
-      image1.Visible := not true;
-      image2.Visible := not true;
->>>>>>> origin/master
       except
 
       end;
@@ -1503,7 +1516,6 @@ begin
       end;
       memo1.Visible := true;
       form1.Label5.Visible:= true;
-<<<<<<< HEAD
    //   showmessage(form1.Memo1.Font.Name);
      // showmessage(form1.Label5.Font.Name);
 
@@ -1513,12 +1525,6 @@ begin
       //form1.Label5.AutoSize:= false;
       //form1.Label5.WordWrap:=true;
       form1.Label5.Caption:= form1.Memo1.Text;
-=======
-      form1.Label5.Font := form1.Memo1.Font;
-      form1.Label5.AutoSize:= false;
-      form1.Label5.WordWrap:=true;
-      form1.Label5.Caption:= form1.Memo1.Lines.Text;
->>>>>>> origin/master
 
     except
 
@@ -1557,7 +1563,7 @@ end;
 
 procedure TForm1.ListBox1DblClick(Sender: TObject);
 var
-  s,s1,loadfile:string;
+  s,s1:string;
   i:integer;
 begin
   if form1.ListBox1.ItemIndex = -1 then
@@ -1580,6 +1586,8 @@ begin
      Form1.MeisiForm.Width:= 347;
      Form1.MeisiForm.Height:=208;
    end;
+   form1.Image1.Picture.Clear;
+   form1.Image2.Picture.Clear;
    setMeisiSize;
    form1.setdir := {ExtractFilePath( Paramstr(0) ) +} listbox1.Items[listbox1.itemindex] + '\';
    loadSeting(loadfile);
@@ -1604,6 +1612,38 @@ end;
 
 procedure TForm1.ComboBox1Change(Sender: TObject);
 begin
+
+end;
+
+procedure TForm1.Image1Click(Sender: TObject);
+var
+  i:integer;
+begin
+  for i := 0 to form1.comp.Count -1 do begin
+    if form1.comp[i] = sender then begin
+      form1.ComboBox6.ItemIndex:= i;
+      form1.ComboBox6Change(form1.ComboBox6);
+    end;
+  end;
+
+end;
+
+procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+
+end;
+
+procedure TForm1.Label5Click(Sender: TObject);
+var
+  i:integer;
+begin
+  for i := 0 to form1.comp.Count -1 do begin
+    if form1.comp[i] = sender then begin
+      form1.ComboBox6.ItemIndex:= i;
+      form1.ComboBox6Change(form1.ComboBox6);
+    end;
+  end;
 
 end;
 
